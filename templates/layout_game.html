@@ -1,0 +1,11 @@
+<h1>{{.PageTitle}}</h1>
+<div>
+  <p>{{.Character}}</p>
+</div>
+
+<form action="/game" method="POST">
+  <input type="text" name="answer">
+  <button>Submit</button>
+</form>
+
+<h3>{{.Result}}</h3>
