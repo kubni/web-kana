@@ -1,0 +1,59 @@
+body,
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-direction: column;
+  /*background-image: url("../images/sakura_branch.jpg"); */ /* ? */
+ }
+
+header {
+  /*margin-top: 25rem; */
+  margin-top: -5rem;
+  font-style: oblique;
+  animation: drop 1s ease forwards;
+  /*background-image: url("sakura_branch.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 5rem; 
+  text-align: center;
+  */
+}
+
+@keyframes drop{
+  0% {}
+  70% {transform: translateY(35rem)}
+  100% {transform: translateY(30rem)}
+}
+
+.buttons {
+  display: flex;
+  gap: 2rem;
+  animation: drop 1s ease forwards;
+}
+
+input {
+  padding: 2rem;
+  /*border: none; */
+  border-radius: 5px;
+  color: #FFFFFF;
+  text-shadow: 1px 1px #000000;
+  font-weight: 600;
+  font-size: 2em;
+  font-family: "Karla", sans-serif;
+  background-color: #ffb7c5;
+  cursor: pointer;
+  box-shadow: 5px 5px #888888;
+} 
+
+input:hover {
+  background-color: #f0c8d6;
+}

@@ -1,14 +1,13 @@
-package main 
-
+package main
 
 import (
-  "fmt"
-  "log"
-  "net/http"
-  "html/template"
-  "web_kana_v1/hiragana"
-
-  "github.com/gorilla/mux"
+	"fmt"
+	"html/template"
+	"log"
+	"net/http"
+	"web_kana_v1/kana/tables"
+	"web_kana_v1/kana/kana_logic"
+	"github.com/gorilla/mux"
 )
 
 type TemplateData struct {
@@ -17,24 +16,13 @@ type TemplateData struct {
   Result    string
 }
 
-
-/* //Kako da prosledim tmp dole u handlefunc da ne bih imao anonimnu funkciju ?
-
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-  data := TemplateData {
-    PageTitle: "Web Kana", 
-    HelloWorldTest: "Hello from a templated world!",
-  }
-
-  tmp.Execute(w, data)
-}
-*/
-
 func main () {
 
-
   r := mux.NewRouter()
- 
+    // For serving the static files 
+
+  r.PathPrefix("/static/stylesheets").Handler(http.StripPrefix("/static/stylesheets", http.FileServer(http.Dir("./static/stylesheets")))) 
+
   // TODO: https://stackoverflow.com/questions/26211954/how-do-i-pass-arguments-to-my-handler
   tmp_main := template.Must(template.ParseFiles("./templates/layout_main.html"))
 
@@ -43,39 +31,51 @@ func main () {
   }).Methods("GET")
 
 
+
+
+  var chosen_alphabet_table map[string][]string
+
+
   tmp_game := template.Must(template.ParseFiles("./templates/layout_game.html"))
-  r.HandleFunc("/game", func (w http.ResponseWriter, r *http.Request) {
-
-
-
-    data := TemplateData {
+  data := TemplateData {
         PageTitle: "Web Kana", 
-        Character: hiragana.Play_all_gamemode(),
+        Character: "",
         Result: "", 
-    }
-    
+      }
 
+  r.HandleFunc("/game", func (w http.ResponseWriter, r *http.Request) {
+    if r.Method == "GET" {
+      r.ParseForm()
 
-    if err := r.ParseForm(); err != nil {
-      fmt.Println("ParseForm() error: %v", err)
-    }
-   
-    answer := r.FormValue("answer")
+      chosen_alphabet := r.FormValue("chosen-alphabet")
+      if chosen_alphabet == "Hiragana" {
+        chosen_alphabet_table = tables.Hiragana_table
+      } else {
+        chosen_alphabet_table = tables.Katakana_table
+      }
+      
+      data.Character = kana_logic.Play_all_gamemode(chosen_alphabet_table) 
 
-    if hiragana.Check_answer(answer, data.Character) {
-        data.Result = "Correct answer!"
+      tmp_game.Execute(w, data)
     } else {
-        data.Result = "Wrong answer!"
+
+      if err := r.ParseForm(); err != nil {
+        fmt.Printf("ParseForm() error: %v", err)
+      }
+     
+      answer := r.FormValue("answer")
+
+      if kana_logic.Check_answer(answer, data.Character) {
+        data.Result = "Correct answer!"
+      } else {
+        data.Result = fmt.Sprintf("Wrong, the right answer  was %v", tables.Romaji_table[data.Character]) // TODO: Bold / colored right answer
+      }
+      
+      data.Character = kana_logic.Play_all_gamemode(chosen_alphabet_table) 
+      
+      tmp_game.Execute(w, data)  
     }
-
-    tmp_game.Execute(w, data)
-  }).Methods("POST")
- 
-  
-
-
-
-
+  })
 
   fmt.Println("Starting server at port 8000...")
   log.Fatal(http.ListenAndServe(":8000", r))

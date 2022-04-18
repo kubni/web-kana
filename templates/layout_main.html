@@ -1,4 +1,24 @@
-<h1>Hello Main</h1>
-<form action="/game" method="POST">
-  <button>Play a Game</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;600&display=swap" rel="stylesheet"> 
+    <link href="/static/stylesheets/style_main.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1> Welcome! Choose which kana alphabet you want to practice: </h1>
+      </header>
+      <form action="/game" method="GET">
+        <div class="buttons">
+          <input class="alphabet-button" type="submit" name="chosen-alphabet" value="Hiragana">
+          <input class="alphabet-button" type="submit" name="chosen-alphabet" value="Katakana">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
