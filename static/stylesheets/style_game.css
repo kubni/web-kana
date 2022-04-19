@@ -1,0 +1,62 @@
+:root {
+  --clr-primary: steelblue;
+  --clr-secondary: #f07575;
+}
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body,
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+/* Typography */
+.target-char {
+  color: var(--clr-secondary);
+}
+
+/* Layout */
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--clr-primary);
+  gap: 4rem;
+ }
+
+header {
+  margin-top: 5rem;
+  background-color: lightgrey;
+  width: 100%; 
+  text-align: center;
+}
+
+button {
+  display: none; 
+}
+
+input {
+  padding: 0.5rem;
+  border-radius: 10px;
+  box-shadow: 5px 5px rgba(0, 0, 0, 30%);
+  border: none;
+  background-color: #e6e6e6;
+}
+
+input:focus {
+  outline: 2px solid var(--clr-secondary);
+
+}
+/* Utilities */ 
+
+.correct-answer {
+  color: var(--clr-secondary);
+}
