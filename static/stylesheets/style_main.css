@@ -12,7 +12,7 @@
 
 
 body {
-  background-image: url("sakura_branch.jpg"); 
+  background-image: url("../images/sakura_branch.jpg"); 
   background-color: #333;
   background-blend-mode: multiply;
   background-position:right top;
@@ -63,7 +63,7 @@ input {
   font-weight: 600;
   font-size: 2em;
   font-family: "Karla", sans-serif;
-  background-color:/* #ffb7c5*/var(--clr-primary);
+  background-color: var(--clr-primary);
   cursor: pointer;
   box-shadow: 5px 5px #888888;
 } 
