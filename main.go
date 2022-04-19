@@ -71,6 +71,7 @@ func main () {
 
       if kana_logic.Check_answer(answer, data.Character) {
         data.Result = "Correct answer!"
+        data.CorrectAnswer = ""
       } else {
         data.CorrectAnswer = tables.Romaji_table[data.Character]
         data.Result = fmt.Sprintf("Wrong, the right answer  was ") 
