@@ -23,6 +23,11 @@
       </form>
 
       <h3>{{.Result}}<span class="correct-answer">{{.CorrectAnswer}}</span></h3>
+
+      <form action="/game" method="POST">
+        <input type="text" value="true" name="finish-value" hidden="hidden">
+        <button>Finish</button>
+      </form>
     </div>
   </body>
 </html>

@@ -31,44 +31,47 @@ var data = TemplateData {
 
 func GameController (w http.ResponseWriter, r *http.Request) {
   
-  
   if r.Method == "GET" {
-    fmt.Println("r.Method: ", r.Method)
-      if err := r.ParseForm(); err != nil {
-        fmt.Printf("ParseForm() error: %v", err)
-      }
-
-      chosenAlphabet := r.FormValue("chosen-alphabet")
-      if chosenAlphabet == "Hiragana" {
-        chosenAlphabetTable = tables.Hiragana_table
-        data.PageTitle = "ひらがな"
-      } else {
-        chosenAlphabetTable = tables.Katakana_table
-        data.PageTitle = "カタカナ"
-      }
-      
-      data.Character = kana_logic.Play_all_gamemode(chosenAlphabetTable) 
-
-      templates.TmpGame.Execute(w, data)
-    } else {
-      if err := r.ParseForm(); err != nil {
-        fmt.Printf("ParseForm() error: %v", err)
-      }
-     
-      answer := r.FormValue("answer")
-
-      if kana_logic.Check_answer(answer, data.Character) {
-        data.Result = "Correct answer!"
-        data.CorrectAnswer = ""
-      } else {
-        data.CorrectAnswer = tables.Romaji_table[data.Character]
-        data.Result = fmt.Sprintf("Wrong, the right answer was ") 
-      }
-      
-      data.Character = kana_logic.Play_all_gamemode(chosenAlphabetTable) 
-      
-      templates.TmpGame.Execute(w, data)  
+    if err := r.ParseForm(); err != nil {
+      fmt.Printf("ParseForm() error: %v", err)
     }
 
+
+    fmt.Println("r.Form: \n", r.Form)
+
+
+
+
+    chosenAlphabet := r.FormValue("chosen-alphabet")
+    if chosenAlphabet == "Hiragana" {
+      chosenAlphabetTable = tables.Hiragana_table
+      data.PageTitle = "ひらがな"
+    } else {
+      chosenAlphabetTable = tables.Katakana_table
+      data.PageTitle = "カタカナ"
+    }
+
+    data.Character = kana_logic.Play_all_gamemode(chosenAlphabetTable) 
+    
+    templates.TmpGame.Execute(w, data)
+  } else {
+    if err := r.ParseForm(); err != nil {
+      fmt.Printf("ParseForm() error: %v", err)
+    }
+   
+    answer := r.FormValue("answer")
+
+    if kana_logic.Check_answer(answer, data.Character) {
+      data.Result = "Correct answer!"
+      data.CorrectAnswer = ""
+    } else {
+      data.CorrectAnswer = tables.Romaji_table[data.Character]
+      data.Result = fmt.Sprintf("Wrong, the right answer was ") 
+    }
+    
+    data.Character = kana_logic.Play_all_gamemode(chosenAlphabetTable) 
+    
+    templates.TmpGame.Execute(w, data)  
+  }
 }
 
