@@ -13,21 +13,7 @@ import (
 
 func main () {
 
-  // Database URI 
-  uri := "mongodb://localhost:27017"
-
-  // Connect to the database
-  client, ctx, cancel, err := dbLogic.ConnectTo(uri)
-  if err != nil {
-      panic(err)
-  }
-   
-  // Release resource when the main function is returned.
-  defer dbLogic.Close(client, ctx, cancel)
-   
-  // Ping the database 
-  dbLogic.Ping(client, ctx, uri)
-
+  
 
 //  var document interface{}
      

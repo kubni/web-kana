@@ -5,6 +5,25 @@ import (
   "go.mongodb.org/mongo-driver/mongo"
 ) 
 
+
+// TODO: Turn this database initialization into a function and make it callable by the controller
+// Or find a better way 
+
+// Database URI 
+  uri := "mongodb://localhost:27017"
+
+  // Connect to the database
+  client, ctx, cancel, err := dbLogic.ConnectTo(uri)
+  if err != nil {
+      panic(err)
+  }
+   
+  // Release resource when the main function is returned.
+  defer dbLogic.Close(client, ctx, cancel)
+   
+  // Ping the database 
+  dbLogic.Ping(client, ctx, uri)
+
 func InsertOne (client *mongo.Client, ctx context.Context, database string, col string, doc interface{}) (*mongo.InsertOneResult, error) {
  
     // select database and collection with Client.Database method

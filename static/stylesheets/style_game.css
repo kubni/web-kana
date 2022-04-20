@@ -39,10 +39,6 @@ header {
   text-align: center;
 }
 
-button {
-  display: none; 
-}
-
 input {
   padding: 0.5rem;
   border-radius: 10px;
@@ -53,10 +49,27 @@ input {
 
 input:focus {
   outline: 2px solid var(--clr-secondary);
-
 }
-/* Utilities */ 
 
-.correct-answer {
+.body.input {
+  color: steelblue;
+}
+.finish-button {
+  padding: 1rem 2rem;
+  color: var(--clr-primary);
+  font-weight: bold; 
+  font-size: 20px;
+}
+
+.go-back-button {
+  color: var(--clr-primary);
+  font-weight: bold;
+}
+/* Utilities */ /* TODO: Move target-char rule from typography to utilities?  */ 
+
+.correct-answer,
+.total-score {
   color: var(--clr-secondary);
 }
+
+

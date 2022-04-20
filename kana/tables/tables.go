@@ -44,7 +44,7 @@ var Romaji_table = map[string]string {
  Hiragana_table["k_column"][4]: "ko",
                                   
  Hiragana_table["s_column"][0]: "sa",
- Hiragana_table["s_column"][1]: "si",
+ Hiragana_table["s_column"][1]: "shi",
  Hiragana_table["s_column"][2]: "su",
  Hiragana_table["s_column"][3]: "se",
  Hiragana_table["s_column"][4]: "so",
@@ -103,7 +103,7 @@ var Romaji_table = map[string]string {
  Katakana_table["k_column"][4]: "ko",
                          
  Katakana_table["s_column"][0]: "sa",
- Katakana_table["s_column"][1]: "si",
+ Katakana_table["s_column"][1]: "shi",
  Katakana_table["s_column"][2]: "su",
  Katakana_table["s_column"][3]: "se",
  Katakana_table["s_column"][4]: "so",
