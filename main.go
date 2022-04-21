@@ -6,7 +6,7 @@ import (
         "net/http"
 	"web_kana_v1/routes"
         "web_kana_v1/dbLogic"
-
+        
         "github.com/gorilla/mux"
 )
 
@@ -14,15 +14,8 @@ import (
 func main () {
 
   
-
-//  var document interface{}
-     
- // document = bson.D{
- //   {Key: "testIme",    Value: "Nikola"},
- //   {Key: "testPrez",   Value: "Kuburovic"},
- //   {Key: "science",    Value: 90},
- //   {Key: "computer",   Value: 95},
- // }
+  // TODO:  not needed?
+  dbClient, ctx := dbLogic.InitializeDatabaseConnection() 
 
   r := mux.NewRouter()
 

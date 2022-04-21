@@ -22,11 +22,10 @@ func Close(client *mongo.Client, ctx context.Context, cancel context.CancelFunc)
     defer cancel()
     
     // client.Disconnect will close the database connection
-    // TODO: Why is this deferred if we defer the close() function which calls these 2 functions in the main()
     defer func(){
      
         // client.Disconnect method also has deadline.
-        // returns error if any,
+        // returns error if any
         if err := client.Disconnect(ctx); err != nil{
             panic(err)
         }
@@ -35,16 +34,13 @@ func Close(client *mongo.Client, ctx context.Context, cancel context.CancelFunc)
  
 func ConnectTo(uri string) (*mongo.Client, context.Context, context.CancelFunc, error) {
   /*
-  We set the deadline for process operations to 30 seconds 
-  Background() returns a non-nil, empty Context. It is never canceled, has no values, and has no deadline. 
-  It is typically used by the main function, initialization, and tests, and as the top-level Context for incoming requests. 
+    We set the deadline for process operations to 10 seconds 
+    Background() returns a non-nil, empty Context. It is never canceled, has no values, and has no deadline. 
   */
-  ctx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
-  
-     
+  ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
   /* 
-  mongo.Connect returns mongo.Client which will be used for further operations with the database. 
-  ApplyURI parses the given URI and sets options accordingly.
+    mongo.Connect returns mongo.Client which will be used for further operations with the database. 
+    ApplyURI parses the given URI and sets options accordingly.
   */
   client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 
@@ -61,4 +57,22 @@ func Ping(client *mongo.Client, ctx context.Context, uri string) error {
     }
     fmt.Printf("Connected successfully to %v\n", uri)
     return nil
+}
+
+func GetCollection(client *mongo.Client, dbName string, collectionName string) *mongo.Collection {
+    collection := client.Database(dbName).Collection(collectionName)
+    return collection
+}
+
+func InitializeDatabaseConnection() (client *mongo.Client, ctx context.Context) {
+  uri := "mongodb://localhost:27017"
+
+  // Connect to the database
+  client, ctx, cancel, err := ConnectTo(uri)
+  if err != nil {
+      panic(err)
+  }
+   
+  // TODO: Do we need to return the context as well ?
+  return client, ctx
 }

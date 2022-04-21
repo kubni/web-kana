@@ -7,6 +7,7 @@ import (
   "web_kana_v1/kana/tables"
   "web_kana_v1/kana/kana_logic"
   "web_kana_v1/models"
+
   "go.mongodb.org/mongo-driver/bson"
 )
 
@@ -21,11 +22,30 @@ type TemplateData struct {
 }
 
 
-func IndexController (w http.ResponseWriter, r *http.Request) {
+type GameController struct {
+  chosenAlphabetTable map[string][]string
+  data TemplateData
+  model *models.Model
+}
+
+func newGameController() *GameController {
+  gc GameController{}
+    gc.data = TemplateData {
+      PageTitle: "", 
+      Character: "",
+      ResultMessage: "",
+      CorrectAnswer: "",
+      IsFinished: "false",
+      TotalScore: 0,
+    }
+  }
+}
+
+func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
   templates.TmpMain.Execute(w, nil)  
 }
 
-var chosenAlphabetTable map[string][]string // TODO: Bad practice ? Concurrency issues with global variables ?
+var chosenAlphabetTable map[string][]string 
 var data = TemplateData {
         PageTitle: "", 
         Character: "",
@@ -35,7 +55,7 @@ var data = TemplateData {
         TotalScore: 0,
  }
 
-func GameController (w http.ResponseWriter, r *http.Request) {
+func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
   if r.Method == "GET" {
     if err := r.ParseForm(); err != nil {
       fmt.Printf("ParseForm() error: %v", err)
@@ -88,7 +108,8 @@ func GameController (w http.ResponseWriter, r *http.Request) {
         }
 
         // Add the player to the database
-        models.InsertOne() 
+
+        models.InsertOne(client, ctx, "testdb", "user", document) 
       }
       fmt.Println("Username: ", username)
     } else {

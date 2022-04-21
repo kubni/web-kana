@@ -2,51 +2,50 @@ package models
 
 import (
   "context"
+  "web_kana_v1/dbLogic"
+
   "go.mongodb.org/mongo-driver/mongo"
 ) 
 
+type Model struct {
+  client *mongo.Client
+  dbName string 
+  collectionName string
+  ctx context.Context
+}
 
-// TODO: Turn this database initialization into a function and make it callable by the controller
-// Or find a better way 
+func NewModel (ctx context.Context, client *mongo.Client, dbName string, collectionName string) *Model {
+  return &Model {
+    client: client,
+    dbName: dbName,
+    collectionName: collectionName,
+    ctx: ctx,
+  } 
+}
 
-// Database URI 
-  uri := "mongodb://localhost:27017"
 
-  // Connect to the database
-  client, ctx, cancel, err := dbLogic.ConnectTo(uri)
-  if err != nil {
-      panic(err)
-  }
-   
-  // Release resource when the main function is returned.
-  defer dbLogic.Close(client, ctx, cancel)
-   
-  // Ping the database 
-  dbLogic.Ping(client, ctx, uri)
-
-func InsertOne (client *mongo.Client, ctx context.Context, database string, col string, doc interface{}) (*mongo.InsertOneResult, error) {
+func (m *Model) InsertOne(doc interface{}) (*mongo.InsertOneResult, error) {
  
-    // select database and collection with Client.Database method
-    // and Database.Collection method
-    collection := client.Database(database).Collection(col)
+    collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName) 
      
-    // InsertOne accept two argument of type Context
-    // and of empty interface  
-    result, err := collection.InsertOne(ctx, doc)
+    
+    result, err := collection.InsertOne(m.ctx, doc)
     return result, err
 }
  
-// insertMany is a user defined method, used to insert
-// documents into collection returns result of
-// InsertMany and error if any.
-func InsertMany (client *mongo.Client, ctx context.Context, database string, col string, docs []interface{}) (*mongo.InsertManyResult, error) {
+/*
+  insertMany is a user defined method, used to insert
+  documents into collection returns result of
+  InsertMany and error if any.
+*/
+func (m *Model) InsertMany(docs []interface{}) (*mongo.InsertManyResult, error) {
  
     // select database and collection ith Client.Database
     // method and Database.Collection method
-    collection := client.Database(database).Collection(col)
+    collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
      
     // InsertMany accept two argument of type Context
     // and of empty interface  
-    result, err := collection.InsertMany(ctx, docs)
+    result, err := collection.InsertMany(m.ctx, docs)
     return result, err
 }
