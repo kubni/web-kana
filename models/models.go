@@ -7,6 +7,7 @@ import (
   "go.mongodb.org/mongo-driver/mongo"
 ) 
 
+// This struct is like a Schema
 type Model struct {
   client *mongo.Client
   dbName string 
@@ -14,6 +15,7 @@ type Model struct {
   ctx context.Context
 }
 
+// Practically a constructor 
 func NewModel (ctx context.Context, client *mongo.Client, dbName string, collectionName string) *Model {
   return &Model {
     client: client,
