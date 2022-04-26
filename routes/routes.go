@@ -12,7 +12,8 @@ import (
 
  
 func InitRoutes(r *mux.Router, client *mongo.Client, ctx context.Context) {
-  r.HandleFunc("/", controllers.IndexController).Methods("GET")
-  r.HandleFunc("/game", controllers.GameController)
+
+  r.HandleFunc("/", controllers.NewGameController(ctx, client).Selection).Methods("GET")
+  r.HandleFunc("/game", controllers.NewGameController(ctx, client).Playground)
 }
 

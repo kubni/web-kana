@@ -14,8 +14,9 @@ import (
 func main () {
 
   
-  // TODO:  not needed?
-  dbClient, ctx := dbLogic.InitializeDatabaseConnection() 
+  client, ctx, cancel := dbLogic.InitializeDatabaseConnection() 
+  defer dbLogic.Close(client, ctx, cancel)
+  dbLogic.Ping(client, ctx) 
 
   r := mux.NewRouter()
 
@@ -23,7 +24,7 @@ func main () {
   r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))) 
   
   // Initalize the routes
-  routes.InitRoutes(r)
+  routes.InitRoutes(r, client, ctx)
 
   // Start the web server
   fmt.Println("Starting server at port 8000...")

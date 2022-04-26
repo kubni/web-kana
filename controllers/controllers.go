@@ -9,6 +9,10 @@ import (
   "web_kana_v1/models"
 
   "go.mongodb.org/mongo-driver/bson"
+  
+  // Test 
+  "go.mongodb.org/mongo-driver/mongo"
+  "context"
 )
 
 
@@ -30,7 +34,7 @@ type GameController struct {
 
 
 // TODO: Do we need to return a *? 
-func newGameController() *GameController {
+func NewGameController(ctx context.Context, client *mongo.Client)  *GameController {
   var gc GameController
 
   gc.data = TemplateData {
@@ -42,7 +46,7 @@ func newGameController() *GameController {
     TotalScore: 0,
   }
 
-  gc.model = models.NewModel()
+  gc.model = models.NewModel(ctx, client, "testdb", "user")
  
   gc.chosenAlphabetTable = make(map[string][]string)
   
@@ -110,8 +114,14 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
         }
 
         // Add the player to the database
-
-        gc.model.InsertOne(gc.model.client, gc.model.ctx, gc.model.dbName, gc.model.collectionName, document) 
+        fmt.Println("document: ", document)
+        fmt.Println("Inserting the user into the db...!") // TODO: Not working
+        insertOneResult, err := gc.model.InsertOne(document)
+        if err != nil {
+          fmt.Printf("InsertOne() error: %v", err)
+        } else {
+          fmt.Println("Insert result: ", insertOneResult)
+        }
       }
       fmt.Println("Username: ", username)
     } else {

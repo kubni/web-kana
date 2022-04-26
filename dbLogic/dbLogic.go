@@ -11,6 +11,8 @@ import (
     "go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
+var uri = "mongodb://localhost:27017"
+
 func Close(client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {
             
     /* 
@@ -37,7 +39,7 @@ func ConnectTo(uri string) (*mongo.Client, context.Context, context.CancelFunc, 
     We set the deadline for process operations to 10 seconds 
     Background() returns a non-nil, empty Context. It is never canceled, has no values, and has no deadline. 
   */
-  ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+  ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
   /* 
     mongo.Connect returns mongo.Client which will be used for further operations with the database. 
     ApplyURI parses the given URI and sets options accordingly.
@@ -48,7 +50,7 @@ func ConnectTo(uri string) (*mongo.Client, context.Context, context.CancelFunc, 
 }
  
 // This method is used to ping the mongoDB to check the connection status and return errors if there are any.
-func Ping(client *mongo.Client, ctx context.Context, uri string) error {
+func Ping(client *mongo.Client, ctx context.Context) error {
  
     // Deadline of the Ping method will be determined by cxt (context of the process)
     // https://www.mongodb.com/docs/manual/core/read-preference/
@@ -64,8 +66,7 @@ func GetCollection(client *mongo.Client, dbName string, collectionName string) *
     return collection
 }
 
-func InitializeDatabaseConnection() (client *mongo.Client, ctx context.Context) {
-  uri := "mongodb://localhost:27017"
+func InitializeDatabaseConnection() (client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {
 
   // Connect to the database
   client, ctx, cancel, err := ConnectTo(uri)
@@ -74,5 +75,5 @@ func InitializeDatabaseConnection() (client *mongo.Client, ctx context.Context) 
   }
    
   // TODO: Do we need to return the context as well ?
-  return client, ctx
+  return client, ctx, cancel
 }
