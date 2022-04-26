@@ -16,10 +16,8 @@ var uri = "mongodb://localhost:27017"
 func Close(client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {
             
     /* 
-    The WithCancel, WithDeadline, and WithTimeout functions take a Context (the parent)
-    and return a derived Context (the child) and a CancelFunc.
-    Calling the CancelFunc cancels the child and its children,
-    removes the parent's reference to the child, and stops any associated timers.
+      Calling the CancelFunc cancels the child and its children,
+      removes the parent's reference to the child, and stops any associated timers.
     */
     defer cancel()
     
@@ -39,7 +37,7 @@ func ConnectTo(uri string) (*mongo.Client, context.Context, context.CancelFunc, 
     We set the deadline for process operations to 10 seconds 
     Background() returns a non-nil, empty Context. It is never canceled, has no values, and has no deadline. 
   */
-  ctx, cancel := context.WithTimeout(context.Background(), 60 * time.Second)
+  ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
   /* 
     mongo.Connect returns mongo.Client which will be used for further operations with the database. 
     ApplyURI parses the given URI and sets options accordingly.
@@ -74,6 +72,5 @@ func InitializeDatabaseConnection() (client *mongo.Client, ctx context.Context, 
       panic(err)
   }
    
-  // TODO: Do we need to return the context as well ?
   return client, ctx, cancel
 }

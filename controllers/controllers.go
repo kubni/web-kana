@@ -23,6 +23,7 @@ type TemplateData struct {
   CorrectAnswer string
   IsFinished    string
   TotalScore    int
+  Scoreboard    []models.DocumentSchema
 }
 
 
@@ -44,9 +45,10 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
     CorrectAnswer: "",
     IsFinished: "false",
     TotalScore: 0,
+    Scoreboard: []models.DocumentSchema{}, 
   }
 
-  gc.model = models.NewModel(ctx, client, "testdb", "user")
+  gc.model = models.NewModel(client, "testdb", "scoreboard")
  
   gc.chosenAlphabetTable = make(map[string][]string)
   
@@ -54,8 +56,6 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
 }
 
 // Main page (selection) controller 
-
-// TODO: Templates field in the controller ? 
 func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
   templates.TmpMain.Execute(w, nil)  
 }
@@ -99,15 +99,11 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
       // There must be a better way.
       username := r.FormValue("username")
      
-      // TODO: Check if it exists in the db, if it exists an update should be done?
-      // How to prevent someone else from updating other's score? We would need authentication.
-
-
       // If the username isn't empty (which only happens the first time, read the comments up and fix it)
       if username != "" {
         var document interface{}
 
-        // As per the official documentation, bson.M should be used if the order of teh elements in the document doesn't matter
+        // As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
         document = bson.M {
           "Username": username,
           "Score": gc.data.TotalScore,
@@ -115,7 +111,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 
         // Add the player to the database
         fmt.Println("document: ", document)
-        fmt.Println("Inserting the user into the db...!") // TODO: Not working
+        fmt.Println("Inserting the user into the db...!") 
         insertOneResult, err := gc.model.InsertOne(document)
         if err != nil {
           fmt.Printf("InsertOne() error: %v", err)
@@ -123,7 +119,9 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
           fmt.Println("Insert result: ", insertOneResult)
         }
       }
-      fmt.Println("Username: ", username)
+
+      gc.data.Scoreboard = gc.model.GetScoreboard()
+
     } else {
 
       // Parse the answer 

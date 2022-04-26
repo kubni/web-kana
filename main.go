@@ -11,6 +11,22 @@ import (
 )
 
 
+
+
+// TODO:
+/*
+  1.Input to stay focused,
+  2. Ranking table in place of username input field after the username has been saved
+
+  3. Some kind of an update system
+    // How to prevent someone with the same username from changing the other's score?
+    // Maybe by using their unique ID as a pseudo-password?
+*/
+
+
+
+
+
 func main () {
 
   
