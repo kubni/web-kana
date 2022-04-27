@@ -1,6 +1,7 @@
 package models 
 
 import (
+  "fmt"
   "context"
   "time"
   "log"
@@ -53,7 +54,7 @@ func (m *Model) InsertMany(docs []interface{}) (*mongo.InsertManyResult, error) 
 // TODO: A better way than a global value?
 // At least find a better name 
 type DocumentSchema struct{
-  Username string 
+  Username string // Has to have same name as the corresponding field in the database 
   Score int
 }
 
@@ -62,7 +63,7 @@ func (m *Model) GetScoreboard() []DocumentSchema {
   collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 
   // Sort by score 
-  opts := options.Find().SetSort(bson.D{{Key:"Score", Value:1}})
+  opts := options.Find().SetSort(bson.D{{Key:"Score", Value:-1}})
 
   // Find will return a Cursor, which is basically a pointer to the set of documents
   cursor, err := collection.Find(context.Background(), bson.D{}, opts)
@@ -94,5 +95,6 @@ func (m *Model) GetScoreboard() []DocumentSchema {
   }
 
   // In case no error occured
+  fmt.Println("Scoreboard: ", scoreboard)
   return scoreboard
 }

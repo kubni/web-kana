@@ -1,8 +1,73 @@
 <!DOCTYPE html>
+<!-- Template definitions, TODO: Separate this into other files -->
+{{ define "template-playground" }}
+  <div class="target-char">
+      <h1>{{.Character}}</h1>
+  </div>
+
+  <form action="/game" method="POST">
+    <input type="text" name="answer">
+    <button hidden="hidden">Submit</button>
+  </form>
+
+  <h3>{{.ResultMessage}}<span class="correct-answer">{{.CorrectAnswer}}</span></h3>
+  <form action="/game" method="POST">
+    <input type="text" value="true" name="isFinished" hidden="hidden">
+    <input class="finish-button" type="submit" value="Finish">
+  </form>
+{{ end }}
+
+{{ define "template-finish" }}
+  <h2>The game is finished. Your total score is: <span class="total-score">{{.TotalScore}}</span></h2>
+
+  <!-- TODO: This properly goes back to the main page, but we need to somehow reset all the data that was saved during the previous session so that we can start over-->
+  <input class="go-back-button" type=button onClick="parent.location='/'" value='Go back to the Main Page'>
+
+  <h2>If you want to save your result, type in your username:</h2> 
+  <form action="/game" method="POST">
+    <input type="text" name="username">
+  </form>
+{{ end }}
+
+
+<!-- TODO: Top10: We need to add if index > 10 break and then print only the current user results -->
+{{ define "template-scoreboard"}}
+  <h1>Scoreboard</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Position</th>
+        <th>Username</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{ range $index, $element := .Scoreboard }}
+        {{ if eq $element.Username $.CurrentPlayer }} 
+        <!-- $.CurrentPlayer because range goes into the Scoreboard and we use $ like .. in terminal to go up one level-->
+          <tr class="active-row">
+            <td>{{ $index }}</td>
+            <td>{{ $element.Username }}</td>
+            <td>{{ $element.Score }}</td>
+          </tr>
+        {{ else }}
+          <tr>
+            <td>{{ $index }}</td>
+            <td>{{ $element.Username }}</td>
+            <td>{{ $element.Score }}</td>
+          </tr>
+        {{ end }}
+      {{ end }}
+    </tbody>
+{{ end }}
+
 <html lang="en">
   <head>
     <title>Game</title>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;600&display=swap" rel="stylesheet"> 
@@ -14,33 +79,14 @@
         <h1>{{.PageTitle}}</h1>
       </header>
 
-      {{ if eq .IsFinished "false"}}
-        <div class="target-char">
-          <h1>{{.Character}}</h1>
-        </div>
-
-        <form action="/game" method="POST">
-          <input type="text" name="answer">
-          <button hidden="hidden">Submit</button>
-        </form>
-        
-        <h3>{{.ResultMessage}}<span class="correct-answer">{{.CorrectAnswer}}</span></h3>
-        <form action="/game" method="POST">
-          <input type="text" value="true" name="finish-value" hidden="hidden">
-          <input class="finish-button" type="submit" value="Finish">
-        </form>
+      {{ if eq .IsFinished "false" }}
+        {{ template "template-playground" . }}
+      {{ else if eq .DisplayScoreboard "false" }}
+        {{ template "template-finish" . }} 
       {{ else }}
-      <h2>The game is finished. Your total score is: <span class="total-score">{{.TotalScore}}</span></h2>
-
-      <!-- TODO: This properly goes back to the main page, but we need to somehow reset all the data that was saved during the previous session so that we can start over-->
-      <input class="go-back-button" type=button onClick="parent.location='/'" value='Go back to the Main Page'>
-      
-
-      <h2>If you want to save your result, type in your username:</h2> 
-      <form action="/game" method="POST">
-        <input type="text" name="username">
-      </form>
+        {{ template "template-scoreboard" . }}
       {{ end }}
-            </div>
+      
+    </div>
   </body>
 </html>

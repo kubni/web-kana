@@ -17,13 +17,15 @@ import (
 
 
 type TemplateData struct {
-  PageTitle     string 
-  Character     string
-  ResultMessage string
-  CorrectAnswer string
-  IsFinished    string
-  TotalScore    int
-  Scoreboard    []models.DocumentSchema
+  PageTitle             string 
+  Character             string
+  ResultMessage         string
+  CorrectAnswer         string
+  IsFinished            string
+  CurrentPlayer         string
+  TotalScore            int
+  DisplayScoreboard     string
+  Scoreboard            []models.DocumentSchema
 }
 
 
@@ -44,11 +46,13 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
     ResultMessage: "",
     CorrectAnswer: "",
     IsFinished: "false",
+    CurrentPlayer: "",
     TotalScore: 0,
+    DisplayScoreboard: "false",
     Scoreboard: []models.DocumentSchema{}, 
   }
 
-  gc.model = models.NewModel(client, "testdb", "scoreboard")
+  gc.model = models.NewModel(client, "testdb", "scoreboard2")
  
   gc.chosenAlphabetTable = make(map[string][]string)
   
@@ -57,6 +61,20 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
 
 // Main page (selection) controller 
 func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
+
+  // TODO: Why doesn't this reset the data?
+  gc.data = TemplateData {
+    PageTitle: "", 
+    Character: "",
+    ResultMessage: "",
+    CorrectAnswer: "",
+    IsFinished: "false",
+    CurrentPlayer: "",
+    TotalScore: 0,
+    DisplayScoreboard: "false",
+    Scoreboard: []models.DocumentSchema{}, 
+  }
+
   templates.TmpMain.Execute(w, nil)  
 }
 
@@ -87,7 +105,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
     }
   
     // Check if the finish button has been clicked, if it was, we don't check the answer and the game stops. 
-    if r.FormValue("finish-value") == "true" {
+    if r.FormValue("isFinished") == "true" {
       gc.data.IsFinished = "true"
     }
 
@@ -97,31 +115,35 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
       // Parse the username 
       // TODO: The first time we pass this condition (precisely when the Finish button is clicked) we will have username = "", but this could actually work, we only need to check if its "" before adding it to the db.
       // There must be a better way.
-      username := r.FormValue("username")
-     
+      gc.data.CurrentPlayer = r.FormValue("username")
+      fmt.Println("CURRENTPLAYER: ", gc.data.CurrentPlayer) 
       // If the username isn't empty (which only happens the first time, read the comments up and fix it)
-      if username != "" {
+      if gc.data.CurrentPlayer != "" {
         var document interface{}
 
         // As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
         document = bson.M {
-          "Username": username,
+          "Username": gc.data.CurrentPlayer,
           "Score": gc.data.TotalScore,
         }
 
         // Add the player to the database
         fmt.Println("document: ", document)
-        fmt.Println("Inserting the user into the db...!") 
+        fmt.Println("Inserting the user into the db...") 
         insertOneResult, err := gc.model.InsertOne(document)
         if err != nil {
           fmt.Printf("InsertOne() error: %v", err)
         } else {
           fmt.Println("Insert result: ", insertOneResult)
         }
+
+        // TODO: Change this to bool
+        gc.data.DisplayScoreboard = "true"
+        gc.data.Scoreboard = gc.model.GetScoreboard()
+
       }
-
-      gc.data.Scoreboard = gc.model.GetScoreboard()
-
+      
+      
     } else {
 
       // Parse the answer 
@@ -135,7 +157,10 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
       } else {
         gc.data.CorrectAnswer = tables.Romaji_table[gc.data.Character]
         gc.data.ResultMessage = fmt.Sprintf("Wrong, the right answer was ") 
-        gc.data.TotalScore--
+        
+        if gc.data.TotalScore > 0 {
+          gc.data.TotalScore--
+        }
       }
 
       gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable) 
