@@ -58,7 +58,7 @@ type DocumentSchema struct{
   Score int
 }
 
-func (m *Model) GetScoreboard() []DocumentSchema {
+func (m *Model) GetScoreboard(currentPlayer string, currentScore int) ([]DocumentSchema, int)  {
 
   collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 
@@ -78,6 +78,8 @@ func (m *Model) GetScoreboard() []DocumentSchema {
   var scoreboard []DocumentSchema 
 
   // Iterate through the results and add them into the previously declared slice
+  i := 1
+  currentRank := -1
   for cursor.Next(context.Background()) {
     result := DocumentSchema{} 
 
@@ -88,7 +90,14 @@ func (m *Model) GetScoreboard() []DocumentSchema {
     }
 
     scoreboard = append(scoreboard, result)
+
+    // We need to save the rank of the current player 
+    if result.Username == currentPlayer && result.Score == currentScore {
+      currentRank = i
+    }
+    i++
   }
+
 
   if err := cursor.Err(); err != nil {
     log.Fatal(err)
@@ -96,5 +105,5 @@ func (m *Model) GetScoreboard() []DocumentSchema {
 
   // In case no error occured
   fmt.Println("Scoreboard: ", scoreboard)
-  return scoreboard
+  return scoreboard, currentRank
 }

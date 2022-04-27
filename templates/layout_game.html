@@ -9,13 +9,21 @@
     <input type="text" name="answer">
     <button hidden="hidden">Submit</button>
   </form>
-
+  
+  <h2>Current score: <span class="total-score">{{.TotalScore}}</span></h2>
+  
   <h3>{{.ResultMessage}}<span class="correct-answer">{{.CorrectAnswer}}</span></h3>
+ 
   <form action="/game" method="POST">
     <input type="text" value="true" name="isFinished" hidden="hidden">
     <input class="finish-button" type="submit" value="Finish">
   </form>
-{{ end }}
+
+  <form action="/game" method="POST">
+    <input type="text" value="true" name="hardMode" hidden="hidden">
+    <input class="hardmode-button" type="submit" value="Hard Mode">
+  </form>
+{{end}}
 
 {{ define "template-finish" }}
   <h2>The game is finished. Your total score is: <span class="total-score">{{.TotalScore}}</span></h2>
@@ -33,10 +41,11 @@
 <!-- TODO: Top10: We need to add if index > 10 break and then print only the current user results -->
 {{ define "template-scoreboard"}}
   <h1>Scoreboard</h1>
+  <h2>Your rank is: <span class="player-rank">{{.CurrentRank}}</span></h2>
   <table>
     <thead>
       <tr>
-        <th>Position</th>
+        <th>Rank</th>
         <th>Username</th>
         <th>Score</th>
       </tr>
@@ -46,13 +55,13 @@
         {{ if eq $element.Username $.CurrentPlayer }} 
         <!-- $.CurrentPlayer because range goes into the Scoreboard and we use $ like .. in terminal to go up one level-->
           <tr class="active-row">
-            <td>{{ $index }}</td>
+            <td>{{ $.CurrentRank }}</td>
             <td>{{ $element.Username }}</td>
             <td>{{ $element.Score }}</td>
           </tr>
         {{ else }}
           <tr>
-            <td>{{ $index }}</td>
+            <td>{{ inc $index }}</td> 
             <td>{{ $element.Username }}</td>
             <td>{{ $element.Score }}</td>
           </tr>

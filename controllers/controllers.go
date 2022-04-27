@@ -21,11 +21,15 @@ type TemplateData struct {
   Character             string
   ResultMessage         string
   CorrectAnswer         string
+  HardMode              string
+  HardModeTimer         int 
   IsFinished            string
   CurrentPlayer         string
   TotalScore            int
+  CurrentRank           int 
   DisplayScoreboard     string
   Scoreboard            []models.DocumentSchema
+  MessageForUser        string
 }
 
 
@@ -45,11 +49,15 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
     Character: "",
     ResultMessage: "",
     CorrectAnswer: "",
+    HardMode: "false",
+    HardModeTimer: 5,
     IsFinished: "false",
     CurrentPlayer: "",
     TotalScore: 0,
+    CurrentRank: 0,
     DisplayScoreboard: "false",
     Scoreboard: []models.DocumentSchema{}, 
+    MessageForUser: "",
   }
 
   gc.model = models.NewModel(client, "testdb", "scoreboard2")
@@ -63,19 +71,25 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
 func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
 
   // TODO: Why doesn't this reset the data?
-  gc.data = TemplateData {
+  /*
+    gc.data = TemplateData {
     PageTitle: "", 
     Character: "",
     ResultMessage: "",
     CorrectAnswer: "",
+    HardMode: "false",
     IsFinished: "false",
     CurrentPlayer: "",
     TotalScore: 0,
     DisplayScoreboard: "false",
     Scoreboard: []models.DocumentSchema{}, 
   }
-
-  templates.TmpMain.Execute(w, nil)  
+  */
+  
+    if err := templates.TmpMain.Execute(w, nil); err != nil {
+      panic(err)
+    }
+ 
 }
 
 // Game page (playground) controller 
@@ -97,26 +111,30 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 
     gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable) 
     
-    templates.TmpGame.Execute(w, gc.data)
+    if err := templates.TmpGame.Execute(w, gc.data); err != nil {
+      panic(err)
+    }
 
   } else {
     if err := r.ParseForm(); err != nil {
       fmt.Printf("ParseForm() error: %v", err)
     }
-  
+ 
+
+    // TODO: Get rid of the "double"  ifs for same thing.
+   
     // Check if the finish button has been clicked, if it was, we don't check the answer and the game stops. 
     if r.FormValue("isFinished") == "true" {
       gc.data.IsFinished = "true"
     }
 
+
     // TODO: Is this okay? r.FormValue("finish-value") doesn't have a TRUE value if we don't click on the Finish button, so if we check with that, we will only pass the condition once. 
     // Therefore, this is needed because IsFinished will always be true once set because its in a global struct variable 
     if gc.data.IsFinished == "true" {
       // Parse the username 
-      // TODO: The first time we pass this condition (precisely when the Finish button is clicked) we will have username = "", but this could actually work, we only need to check if its "" before adding it to the db.
-      // There must be a better way.
       gc.data.CurrentPlayer = r.FormValue("username")
-      fmt.Println("CURRENTPLAYER: ", gc.data.CurrentPlayer) 
+
       // If the username isn't empty (which only happens the first time, read the comments up and fix it)
       if gc.data.CurrentPlayer != "" {
         var document interface{}
@@ -130,6 +148,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
         // Add the player to the database
         fmt.Println("document: ", document)
         fmt.Println("Inserting the user into the db...") 
+
         insertOneResult, err := gc.model.InsertOne(document)
         if err != nil {
           fmt.Printf("InsertOne() error: %v", err)
@@ -139,16 +158,14 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 
         // TODO: Change this to bool
         gc.data.DisplayScoreboard = "true"
-        gc.data.Scoreboard = gc.model.GetScoreboard()
+        gc.data.Scoreboard, gc.data.CurrentRank = gc.model.GetScoreboard(gc.data.CurrentPlayer, gc.data.TotalScore)
 
       }
-      
-      
     } else {
 
       // Parse the answer 
       answer := r.FormValue("answer")
-      fmt.Println("Finish value: ", gc.data.IsFinished)
+
       // Check if the answer is correct 
       if kana_logic.Check_answer(answer, gc.data.Character) {
         gc.data.ResultMessage = "Correct answer!"
@@ -164,8 +181,12 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
       }
 
       gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable) 
+      
     } 
-    templates.TmpGame.Execute(w, gc.data)  
+    if err := templates.TmpGame.Execute(w, gc.data); err != nil {
+      panic(err)
+    }
+
   }
 }
 

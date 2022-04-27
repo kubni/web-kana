@@ -61,6 +61,8 @@ input:focus {
   font-size: 20px;
 }
 
+
+
 .go-back-button {
   color: var(--clr-primary);
   font-weight: bold;
@@ -98,8 +100,6 @@ tbody tr:last-of-type {
   border-bottom: 2px solid var(--clr-primary);
 }
 
-
-
 tbody tr.active-row {
   font-weight: bold;
   background-color: var(--clr-secondary);
@@ -111,8 +111,9 @@ tbody tr.active-row {
 /* Utilities */ /* TODO: Move target-char rule from typography to utilities?  */ 
 
 .correct-answer,
-.total-score {
+.total-score,
+.player-rank {
   color: var(--clr-secondary);
 }
 
-
+/* TODO: Separate rules in template-specific stylesheets
