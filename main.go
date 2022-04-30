@@ -6,7 +6,8 @@ import (
         "net/http"
 	"web_kana_v1/routes"
         "web_kana_v1/dbLogic"
-        
+        "web_kana_v1/connMonitor"
+
         "github.com/gorilla/mux"
 )
 
@@ -40,7 +41,13 @@ func main () {
   // Initalize the routes
   routes.InitRoutes(r, client, ctx)
 
-  // Start the web server
+  // Configure the web server
+  var cw connMonitor.ConnectionWatcher 
+  s := &http.Server {
+    Addr:       ":8000",
+    Handler:    r,
+    ConnState:  cw.OnStateChange,
+  }
   fmt.Println("Starting server at port 8000...")
-  log.Fatal(http.ListenAndServe(":8000", r))
+  log.Fatal(s.ListenAndServe())
 }
