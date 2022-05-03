@@ -69,8 +69,9 @@ func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
 }
 
 
-func (m *Model) GetScoreboard(currentPage *int) ([]DocumentSchema)  {
+func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema)  {
 
+  fmt.Println("We are in the GetScoreboard function...")
   collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 
   // Sort by score 
@@ -88,22 +89,21 @@ func (m *Model) GetScoreboard(currentPage *int) ([]DocumentSchema)  {
   // TODO: Is slice the best data structure for this?
   var scoreboard []DocumentSchema 
 
-
   // Pagination logic 
   playersPerPage := 10
   numOfPages := m.CalculateNumberOfPages(playersPerPage)
 
   // Iterate through the results and add them into the previously declared slice
-  i := 0
-  j := 0
+  i := 1
+  j := 1
   for cursor.Next(context.Background()) {
+    
     // We need to decode 10 players starting from the one that is at 10*currentPage so we skip the ones before it.
     // TODO: There has to be a better way of doing this 
-    if j < 10*(*currentPage) {
+    if j < playersPerPage*currentPage {
       j++
       continue 
     } 
-
 
     // We store only the desired number of players per page into our scoreboard 
     if i > playersPerPage {
@@ -123,23 +123,16 @@ func (m *Model) GetScoreboard(currentPage *int) ([]DocumentSchema)  {
     i++
   }
 
-
-
-
-
-
-
-
   if err := cursor.Err(); err != nil {
     log.Fatal(err)
   }
 
-  // In case no error occured
-  // We increment the currentPage variable
-  // TODO: Can't i just return a second value which would be currentPage instead of using a pointer?
-  if *currentPage < numOfPages {
-    (*currentPage)++
+  if currentPage > numOfPages {
+    // TODO: Instead of a println we should remove the next page button because there are no more next pages
+    fmt.Println("There are no more pages....") 
+    
   }
   fmt.Println("Scoreboard: ", scoreboard)
+  // In case no error occured
   return scoreboard
 }

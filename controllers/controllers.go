@@ -59,7 +59,7 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
     TotalScore: 0,
     DisplayScoreboard: "false",
     Scoreboard: []models.DocumentSchema{}, 
-    CurrentPage: 1,
+    CurrentPage: 0,
     MessageForUser: "",
   }
 
@@ -119,57 +119,58 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
     }
 
   } else {
+
     if err := r.ParseForm(); err != nil {
       fmt.Printf("ParseForm() error: %v", err)
     }
  
-
     // TODO: Get rid of the "double"  ifs for same thing.
    
     // Check if the finish button has been clicked, if it was, we don't check the answer and the game stops. 
     if r.FormValue("isFinished") == "true" {
       gc.data.IsFinished = "true"
     }
-
+ 
 
     // TODO: Is this okay? r.FormValue("finish-value") doesn't have a TRUE value if we don't click on the Finish button, so if we check with that, we will only pass the condition once. 
     // Therefore, this is needed because IsFinished will always be true once set because its in a global struct variable 
     if gc.data.IsFinished == "true" {
+      fmt.Println("Usli smo u gc.data.IsFinished == true")
       // Parse the username 
-      gc.data.CurrentPlayer = r.FormValue("username")
+      if r.FormValue("username") != "" {
+        gc.data.CurrentPlayer = r.FormValue("username")
+      }
 
       // If the username isn't empty (which only happens the first time, read the comments up and fix it)
       if gc.data.CurrentPlayer != "" {
-        var document interface{}
 
-        // As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
-        document = bson.M {
-          "Username": gc.data.CurrentPlayer,
-          "Score": gc.data.TotalScore,
+        if r.FormValue("isNextPage") == "true" {
+          gc.data.CurrentPage++
+
+        } else { // We don't want to insert same user into the db each time we press "Next Page" button
+          var document interface{}
+
+          // As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
+          document = bson.M {
+            "Username": gc.data.CurrentPlayer,
+            "Score": gc.data.TotalScore,
+          }
+
+          // Add the player to the database
+          fmt.Println("document: ", document)
+          fmt.Println("Inserting the user into the db...") 
+
+          insertOneResult, err := gc.model.InsertOne(document)
+          if err != nil {
+            fmt.Printf("InsertOne() error: %v", err)
+          } else {
+            fmt.Println("Insert result: ", insertOneResult)
+          }
         }
-
-        // Add the player to the database
-        fmt.Println("document: ", document)
-        fmt.Println("Inserting the user into the db...") 
-
-        insertOneResult, err := gc.model.InsertOne(document)
-        if err != nil {
-          fmt.Printf("InsertOne() error: %v", err)
-        } else {
-          fmt.Println("Insert result: ", insertOneResult)
-        }
-
         // TODO: Change this to bool
         gc.data.DisplayScoreboard = "true"
-        for {
-          gc.data.Scoreboard = gc.model.GetScoreboard(&gc.data.CurrentPage)
-          fmt.Println("gc.data.Scoreboard: ", gc.data.Scoreboard) 
-          fmt.Println("CurrentPage: ", gc.data.CurrentPage)
-        }
-
         
-        
-
+        gc.data.Scoreboard = gc.model.GetScoreboard(gc.data.CurrentPage)
 
       }
     } else {
