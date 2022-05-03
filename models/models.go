@@ -5,6 +5,7 @@ import (
   "context"
   "time"
   "log"
+  "math"
   "web_kana_v1/dbLogic"
   "go.mongodb.org/mongo-driver/mongo"
   "go.mongodb.org/mongo-driver/mongo/options"
@@ -52,13 +53,23 @@ func (m *Model) InsertMany(docs []interface{}) (*mongo.InsertManyResult, error) 
 
 
 // TODO: A better way than a global value?
-// At least find a better name 
 type DocumentSchema struct{
-  Username string // Has to have same name as the corresponding field in the database 
+  Username string // Has to have the same name as the corresponding field in the database 
   Score int
 }
 
-func (m *Model) GetScoreboard(currentPlayer string, currentScore int) ([]DocumentSchema, int)  {
+
+// Pagination logic
+func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
+  numberOfPlayers := dbLogic.CountDocuments(dbLogic.GetCollection(m.client, m.dbName, m.collectionName)) // TODO: Check if this works 
+  
+  numOfPages := math.Ceil(float64(numberOfPlayers)  / float64(playersPerPage))
+   
+  return int(numOfPages)
+}
+
+
+func (m *Model) GetScoreboard(currentPage *int) ([]DocumentSchema)  {
 
   collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 
@@ -77,10 +88,28 @@ func (m *Model) GetScoreboard(currentPlayer string, currentScore int) ([]Documen
   // TODO: Is slice the best data structure for this?
   var scoreboard []DocumentSchema 
 
+
+  // Pagination logic 
+  playersPerPage := 10
+  numOfPages := m.CalculateNumberOfPages(playersPerPage)
+
   // Iterate through the results and add them into the previously declared slice
-  i := 1
-  currentRank := -1
+  i := 0
+  j := 0
   for cursor.Next(context.Background()) {
+    // We need to decode 10 players starting from the one that is at 10*currentPage so we skip the ones before it.
+    // TODO: There has to be a better way of doing this 
+    if j < 10*(*currentPage) {
+      j++
+      continue 
+    } 
+
+
+    // We store only the desired number of players per page into our scoreboard 
+    if i > playersPerPage {
+      break 
+    } 
+
     result := DocumentSchema{} 
 
     // Decode bson into our chosen Golang data structure
@@ -91,12 +120,14 @@ func (m *Model) GetScoreboard(currentPlayer string, currentScore int) ([]Documen
 
     scoreboard = append(scoreboard, result)
 
-    // We need to save the rank of the current player 
-    if result.Username == currentPlayer && result.Score == currentScore {
-      currentRank = i
-    }
     i++
   }
+
+
+
+
+
+
 
 
   if err := cursor.Err(); err != nil {
@@ -104,6 +135,11 @@ func (m *Model) GetScoreboard(currentPlayer string, currentScore int) ([]Documen
   }
 
   // In case no error occured
+  // We increment the currentPage variable
+  // TODO: Can't i just return a second value which would be currentPage instead of using a pointer?
+  if *currentPage < numOfPages {
+    (*currentPage)++
+  }
   fmt.Println("Scoreboard: ", scoreboard)
-  return scoreboard, currentRank
+  return scoreboard
 }

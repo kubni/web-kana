@@ -7,6 +7,7 @@ import (
   "web_kana_v1/kana/tables"
   "web_kana_v1/kana/kana_logic"
   "web_kana_v1/models"
+  //"web_kana_v1/pagination"
 
   "go.mongodb.org/mongo-driver/bson"
   
@@ -25,10 +26,11 @@ type TemplateData struct {
   HardModeTimer         int 
   IsFinished            string
   CurrentPlayer         string
-  TotalScore            int
   CurrentRank           int 
+  TotalScore            int
   DisplayScoreboard     string
   Scoreboard            []models.DocumentSchema
+  CurrentPage           int
   MessageForUser        string
 }
 
@@ -53,10 +55,11 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
     HardModeTimer: 5,
     IsFinished: "false",
     CurrentPlayer: "",
-    TotalScore: 0,
     CurrentRank: 0,
+    TotalScore: 0,
     DisplayScoreboard: "false",
     Scoreboard: []models.DocumentSchema{}, 
+    CurrentPage: 1,
     MessageForUser: "",
   }
 
@@ -158,7 +161,15 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 
         // TODO: Change this to bool
         gc.data.DisplayScoreboard = "true"
-        gc.data.Scoreboard, gc.data.CurrentRank = gc.model.GetScoreboard(gc.data.CurrentPlayer, gc.data.TotalScore)
+        for {
+          gc.data.Scoreboard = gc.model.GetScoreboard(&gc.data.CurrentPage)
+          fmt.Println("gc.data.Scoreboard: ", gc.data.Scoreboard) 
+          fmt.Println("CurrentPage: ", gc.data.CurrentPage)
+        }
+
+        
+        
+
 
       }
     } else {

@@ -52,10 +52,10 @@
     </thead>
     <tbody>
       {{ range $index, $element := .Scoreboard }}
-        {{ if eq $element.Username $.CurrentPlayer }} 
+      {{ if eq $element.Username $.CurrentPlayer }} <!-- TODO: We should match the unique ids!!!!--> 
         <!-- $.CurrentPlayer because range goes into the Scoreboard and we use $ like .. in terminal to go up one level-->
           <tr class="active-row">
-            <td>{{ $.CurrentRank }}</td>
+            <td>{{ inc $index }}</td>
             <td>{{ $element.Username }}</td>
             <td>{{ $element.Score }}</td>
           </tr>

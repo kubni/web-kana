@@ -9,6 +9,7 @@ import (
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
     "go.mongodb.org/mongo-driver/mongo/readpref"
+    "go.mongodb.org/mongo-driver/bson"
 )
 
 var uri = "mongodb://localhost:27017"
@@ -64,6 +65,16 @@ func GetCollection(client *mongo.Client, dbName string, collectionName string) *
     return collection
 }
 
+func CountDocuments(collection *mongo.Collection) int64 {
+  // Empty filter so it returns total count 
+  filter := bson.D{}
+  count, err := collection.CountDocuments(context.TODO(), filter)
+  if err != nil {
+    panic(err)
+  }
+
+  return count
+}
 func InitializeDatabaseConnection() (client *mongo.Client, ctx context.Context, cancel context.CancelFunc) {
 
   // Connect to the database
