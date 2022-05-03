@@ -52,8 +52,8 @@
     </thead>
     <tbody>
       {{ range $index, $element := .Scoreboard }}
-      {{ if eq $element.Username $.CurrentPlayer }} <!-- TODO: We should match the unique ids!!!!--> 
-        <!-- $.CurrentPlayer because range goes into the Scoreboard and we use $ like .. in terminal to go up one level-->
+      {{ if eq $element.ID $.CurrentPlayerID }} 
+      <!-- $.CurrentPlayerID because range goes into the Scoreboard and we use $ like .. in terminal to go up one level-->
           <tr class="active-row">
             <td>{{ inc $index }}</td> <!-- FIXME: Index shouldn't go back from 1 on pages other than the first one -->
             <td>{{ $element.Username }}</td>
@@ -69,10 +69,22 @@
       {{ end }}
     </tbody>
 
-    <form action="/game" method="POST">
-      <input type="text" value="true" name="isNextPage" hidden="hidden">  <!-- FIXME: r.FormValue("nextPage") is always empty...-->
-      <input class="nextpage-button" type="submit" value="Next Page">
-    </form>
+    <!-- FIXME: Make this actually be under the table somehow -->
+    {{ if ne .CurrentPage 1 }} <!-- Previous page button is not needed on the first page -->
+    <div class="paginationButtons">
+      <form action="/game" method="POST">
+        <input type="text" value="true" name="isPreviousPageClicked" hidden="hidden">  
+        <input class="previouspage-button" type="submit" value="Previous Page">
+      </form>
+    {{ end }}
+    <!-- TODO: Next page button is not needed on the last page, but we don't store info about number of pages in our data structure...-->
+      <form action="/game" method="POST">
+        <input type="text" value="true" name="isNextPageClicked" hidden="hidden">  
+        <input class="nextpage-button" type="submit" value="Next Page">
+      </form>
+    </div>
+    
+    <h3>Page {{ .CurrentPage }}</h3>
 {{ end }}
 
 <html lang="en">

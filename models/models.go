@@ -54,11 +54,11 @@ func (m *Model) InsertMany(docs []interface{}) (*mongo.InsertManyResult, error) 
 
 // TODO: A better way than a global value?
 type DocumentSchema struct{
-  Username string // Has to have the same name as the corresponding field in the database 
-  Score int
+  ID            string  `bson:"_id, omitempty"` // TODO: Explore the potential of bson notation
+  Username      string  // Has to have the same name as the corresponding field in the database 
+  Score         int     
 }
-
-
+ 
 // Pagination logic
 func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
   numberOfPlayers := dbLogic.CountDocuments(dbLogic.GetCollection(m.client, m.dbName, m.collectionName)) // TODO: Check if this works 
@@ -71,7 +71,6 @@ func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
 
 func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema)  {
 
-  fmt.Println("We are in the GetScoreboard function...")
   collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 
   // Sort by score 
@@ -117,7 +116,7 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema)  {
     if err != nil {
       log.Fatal(err) 
     }
-
+    //fmt.Println("result.ID: ", result.ID) // Program correctly maps the IDs to ID field of our result
     scoreboard = append(scoreboard, result)
 
     i++
@@ -132,7 +131,8 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema)  {
     fmt.Println("There are no more pages....") 
     
   }
-  fmt.Println("Scoreboard: ", scoreboard)
+
+  //fmt.Println("Scoreboard: ", scoreboard)
   // In case no error occured
   return scoreboard
 }

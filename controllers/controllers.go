@@ -7,12 +7,12 @@ import (
   "web_kana_v1/kana/tables"
   "web_kana_v1/kana/kana_logic"
   "web_kana_v1/models"
-  //"web_kana_v1/pagination"
 
   "go.mongodb.org/mongo-driver/bson"
-  
+  "go.mongodb.org/mongo-driver/bson/primitive"
   // Test 
   "go.mongodb.org/mongo-driver/mongo"
+
   "context"
 )
 
@@ -26,6 +26,7 @@ type TemplateData struct {
   HardModeTimer         int 
   IsFinished            string
   CurrentPlayer         string
+  CurrentPlayerID       string 
   CurrentRank           int 
   TotalScore            int
   DisplayScoreboard     string
@@ -47,20 +48,21 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
   var gc GameController
 
   gc.data = TemplateData {
-    PageTitle: "", 
-    Character: "",
-    ResultMessage: "",
-    CorrectAnswer: "",
-    HardMode: "false",
-    HardModeTimer: 5,
-    IsFinished: "false",
-    CurrentPlayer: "",
-    CurrentRank: 0,
-    TotalScore: 0,
-    DisplayScoreboard: "false",
-    Scoreboard: []models.DocumentSchema{}, 
-    CurrentPage: 0,
-    MessageForUser: "",
+    PageTitle:          "", 
+    Character:          "",
+    ResultMessage:      "",
+    CorrectAnswer:      "",
+    HardMode:           "false",
+    HardModeTimer:      5,
+    IsFinished:         "false",
+    CurrentPlayer:      "",
+    CurrentPlayerID:    "",
+    CurrentRank:        0, // TODO: Implement this again 
+    TotalScore:         0,
+    DisplayScoreboard:  "false",
+    Scoreboard:         []models.DocumentSchema{}, 
+    CurrentPage:        1,
+    MessageForUser:     "",
   }
 
   gc.model = models.NewModel(client, "testdb", "scoreboard2")
@@ -135,7 +137,6 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
     // TODO: Is this okay? r.FormValue("finish-value") doesn't have a TRUE value if we don't click on the Finish button, so if we check with that, we will only pass the condition once. 
     // Therefore, this is needed because IsFinished will always be true once set because its in a global struct variable 
     if gc.data.IsFinished == "true" {
-      fmt.Println("Usli smo u gc.data.IsFinished == true")
       // Parse the username 
       if r.FormValue("username") != "" {
         gc.data.CurrentPlayer = r.FormValue("username")
@@ -144,17 +145,22 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
       // If the username isn't empty (which only happens the first time, read the comments up and fix it)
       if gc.data.CurrentPlayer != "" {
 
-        if r.FormValue("isNextPage") == "true" {
+        if r.FormValue("isNextPageClicked") == "true" {
           gc.data.CurrentPage++
+
+        } else if r.FormValue("isPreviousPageClicked") == "true" {
+          gc.data.CurrentPage-- 
 
         } else { // We don't want to insert same user into the db each time we press "Next Page" button
           var document interface{}
 
           // As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
           document = bson.M {
-            "Username": gc.data.CurrentPlayer,
-            "Score": gc.data.TotalScore,
+            "ID":       gc.data.CurrentPlayerID, // At this point this is empty, but we populate it in the model with `bson ...` annotation  
+            "Username": gc.data.CurrentPlayer,                  
+            "Score":    gc.data.TotalScore,
           }
+
 
           // Add the player to the database
           fmt.Println("document: ", document)
@@ -165,8 +171,14 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
             fmt.Printf("InsertOne() error: %v", err)
           } else {
             fmt.Println("Insert result: ", insertOneResult)
+
+            // Decode the insertOneResult into a string
+            if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
+              gc.data.CurrentPlayerID = id.Hex()
+            }
           }
-        }
+        } 
+        
         // TODO: Change this to bool
         gc.data.DisplayScoreboard = "true"
         
