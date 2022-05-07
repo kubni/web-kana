@@ -32,7 +32,7 @@ func main () {
   client, ctx, cancel := dbLogic.InitializeDatabaseConnection() 
   defer dbLogic.Close(client, ctx, cancel)
   dbLogic.Ping(client, ctx) 
-
+  
   r := mux.NewRouter()
 
   // For serving the static files 

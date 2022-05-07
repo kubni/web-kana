@@ -9,6 +9,9 @@ var funcMap = template.FuncMap{
     "inc": func(i int) int {
         return i + 1
     },
+    "dec": func(i int) int {
+      return i - 1
+    },
 }
 
 /* From the docs:

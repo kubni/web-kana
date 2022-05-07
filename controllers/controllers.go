@@ -32,6 +32,7 @@ type TemplateData struct {
   DisplayScoreboard     string
   Scoreboard            []models.DocumentSchema
   CurrentPage           int
+  NumOfPages            int
   MessageForUser        string
 }
 
@@ -61,7 +62,8 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
     TotalScore:         0,
     DisplayScoreboard:  "false",
     Scoreboard:         []models.DocumentSchema{}, 
-    CurrentPage:        1,
+    CurrentPage:        0, // FIXME: This makes the first page not load. I should change this to 0 and do inc $.CurrentPage in every occurence in template
+    NumOfPages:         1,
     MessageForUser:     "",
   }
 
@@ -182,8 +184,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
         // TODO: Change this to bool
         gc.data.DisplayScoreboard = "true"
         
-        gc.data.Scoreboard = gc.model.GetScoreboard(gc.data.CurrentPage)
-
+        gc.data.Scoreboard, gc.data.NumOfPages = gc.model.GetScoreboard(gc.data.CurrentPage)
       }
     } else {
 

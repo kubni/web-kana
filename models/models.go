@@ -69,7 +69,7 @@ func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
 }
 
 
-func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema)  {
+func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int)  {
 
   collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 
@@ -134,5 +134,5 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema)  {
 
   //fmt.Println("Scoreboard: ", scoreboard)
   // In case no error occured
-  return scoreboard
+  return scoreboard, numOfPages
 }

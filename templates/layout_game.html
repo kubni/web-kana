@@ -70,21 +70,22 @@
     </tbody>
 
     <!-- FIXME: Make this actually be under the table somehow -->
-    {{ if ne .CurrentPage 1 }} <!-- Previous page button is not needed on the first page -->
+    {{ if ne .CurrentPage 0 }} <!-- Previous page button is not needed on the first page -->
     <div class="paginationButtons">
       <form action="/game" method="POST">
         <input type="text" value="true" name="isPreviousPageClicked" hidden="hidden">  
         <input class="previouspage-button" type="submit" value="Previous Page">
       </form>
     {{ end }}
-    <!-- TODO: Next page button is not needed on the last page, but we don't store info about number of pages in our data structure...-->
+    <!-- TODO: CSS breaks when only Previous button is displayed -->
+    {{ if lt (inc .CurrentPage) .NumOfPages }} <!-- FIXME: There has to be a better way, i inc this because it has to start from 0 or it won't showthe first page-->
       <form action="/game" method="POST">
         <input type="text" value="true" name="isNextPageClicked" hidden="hidden">  
         <input class="nextpage-button" type="submit" value="Next Page">
       </form>
     </div>
-    
-    <h3>Page {{ .CurrentPage }}</h3>
+    {{ end }} 
+    <h3>Page {{ inc .CurrentPage }}</h3>
 {{ end }}
 
 <html lang="en">
