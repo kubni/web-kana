@@ -45,11 +45,27 @@ func (m *Model) InsertOne(doc interface{}) (*mongo.InsertOneResult, error) {
 func (m *Model) InsertMany(docs []interface{}) (*mongo.InsertManyResult, error) {
  
   collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
+  
   ctx, _ := context.WithTimeout(context.Background(), 10 * time.Second)
- 
+
   result, err := collection.InsertMany(ctx, docs)
   return result, err
 }
+
+func (m *Model) GetPlayerRank(playerID string) (int64, error) {
+  collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
+  ctx, _ := context.WithTimeout(context.Background(), 10 * time.Second)
+
+  // To get the player rank, we count the number of players that exist before him.
+  // https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/count/
+  // Added Key: and Value: in order to get rid of "unkeyed values" warnings
+  filter := bson.D{{Key: "ID", Value: bson.D{{Key: "$lt", Value: playerID}}}}
+  position, err := collection.CountDocuments(ctx, filter)
+
+  return position, err
+}
+
+
 
 
 // TODO: A better way than a global value?
@@ -58,7 +74,7 @@ type DocumentSchema struct{
   Username      string  // Has to have the same name as the corresponding field in the database 
   Score         int     
 }
- 
+
 // Pagination logic
 func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
   numberOfPlayers := dbLogic.CountDocuments(dbLogic.GetCollection(m.client, m.dbName, m.collectionName)) // TODO: Check if this works 
@@ -72,7 +88,6 @@ func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
 func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int)  {
 
   collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
-
   // Sort by score 
   opts := options.Find().SetSort(bson.D{{Key:"Score", Value:-1}})
 

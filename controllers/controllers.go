@@ -3,6 +3,7 @@ package controllers
 import (
   "fmt"
   "net/http"
+  // "time"
   "web_kana_v1/templates"
   "web_kana_v1/kana/tables"
   "web_kana_v1/kana/kana_logic"
@@ -27,7 +28,7 @@ type TemplateData struct {
   IsFinished            string
   CurrentPlayer         string
   CurrentPlayerID       string 
-  CurrentRank           int 
+  CurrentRank           int64 
   TotalScore            int
   DisplayScoreboard     string
   Scoreboard            []models.DocumentSchema
@@ -43,6 +44,15 @@ type GameController struct {
   chosenAlphabetTable map[string][]string
 }
 
+
+// TODO: Move this to a separate file, this is for the purpose of hard mode 
+// FIXME: Make this race-condition-proof
+// func BeginCountdown(d time.Duration) {
+//   counter := int(d)
+//   for ; counter > 0; counter-- {
+//     time.Sleep(d) 
+//   }
+// }
 
 // TODO: Do we need to return a *? 
 func NewGameController(ctx context.Context, client *mongo.Client)  *GameController {
@@ -62,7 +72,7 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
     TotalScore:         0,
     DisplayScoreboard:  "false",
     Scoreboard:         []models.DocumentSchema{}, 
-    CurrentPage:        0, // FIXME: This makes the first page not load. I should change this to 0 and do inc $.CurrentPage in every occurence in template
+    CurrentPage:        0, 
     NumOfPages:         1,
     MessageForUser:     "",
   }
@@ -136,7 +146,8 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
     }
  
 
-    // TODO: Is this okay? r.FormValue("finish-value") doesn't have a TRUE value if we don't click on the Finish button, so if we check with that, we will only pass the condition once. 
+    // TODO: Is this okay? r.FormValue("finish-value") doesn't have a TRUE value if we don't click on the Finish button,
+    // so if we check with that, we will only pass the condition once. 
     // Therefore, this is needed because IsFinished will always be true once set because its in a global struct variable 
     if gc.data.IsFinished == "true" {
       // Parse the username 
@@ -144,7 +155,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
         gc.data.CurrentPlayer = r.FormValue("username")
       }
 
-      // If the username isn't empty (which only happens the first time, read the comments up and fix it)
+      // If the username isn't empty (which only happens the first time, read the comments above and fix it)
       if gc.data.CurrentPlayer != "" {
 
         if r.FormValue("isNextPageClicked") == "true" {
@@ -178,9 +189,21 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
             if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
               gc.data.CurrentPlayerID = id.Hex()
             }
+
+            // Get the player rank 
+            rank, err := gc.model.GetPlayerRank(gc.data.CurrentPlayerID)
+            if err != nil {
+              fmt.Printf("GetPlayerRank() error: %v", err)
+            } else {
+              gc.data.CurrentRank = rank
+            }
+            
           }
         } 
         
+        // testRank := gc.model.Find()
+
+
         // TODO: Change this to bool
         gc.data.DisplayScoreboard = "true"
         

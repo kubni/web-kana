@@ -54,14 +54,16 @@
       {{ range $index, $element := .Scoreboard }}
       {{ if eq $element.ID $.CurrentPlayerID }} 
       <!-- $.CurrentPlayerID because range goes into the Scoreboard and we use $ like .. in terminal to go up one level-->
-          <tr class="active-row">
-            <td>{{ inc $index }}</td> <!-- FIXME: Index shouldn't go back from 1 on pages other than the first one -->
-            <td>{{ $element.Username }}</td>
-            <td>{{ $element.Score }}</td>
+            <tr class="active-row">
+              <!--<td>{{ inc $index }}</td> <!-- FIXME: Index shouldn't go back from 1 on pages other than the first one -->
+              <td>{{ $.CurrentRank }}</td>
+              <td>{{ $element.Username }}</td>
+              <td>{{ $element.Score }}</td>
           </tr>
         {{ else }}
           <tr>
-            <td>{{ inc $index }}</td> 
+            <td>{{ $.CurrentRank }}</td> <!-- FIXME: CurrentRank shouldn't be here. Its corrent for the current player, but if its here then
+                                                     all players have that same rank -->
             <td>{{ $element.Username }}</td>
             <td>{{ $element.Score }}</td>
           </tr>

@@ -7,10 +7,14 @@ import (
 var funcMap = template.FuncMap{
     // The name "inc" is what the function will be called in the template 
     "inc": func(i int) int {
-        return i + 1
+      return (i + 1)
     },
     "dec": func(i int) int {
-      return i - 1
+      return (i + 1) 
+    },
+    "assign": func(x int, y int) int {
+      x = y 
+      return x
     },
 }
 
