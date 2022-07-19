@@ -23,8 +23,6 @@ type TemplateData struct {
   Character             string
   ResultMessage         string
   CorrectAnswer         string
-  HardMode              string
-  HardModeTimer         int 
   IsFinished            string
   CurrentPlayer         string
   CurrentPlayerID       string 
@@ -44,16 +42,6 @@ type GameController struct {
   chosenAlphabetTable map[string][]string
 }
 
-
-// TODO: Move this to a separate file, this is for the purpose of hard mode 
-// FIXME: Make this race-condition-proof
-// func BeginCountdown(d time.Duration) {
-//   counter := int(d)
-//   for ; counter > 0; counter-- {
-//     time.Sleep(d) 
-//   }
-// }
-
 // TODO: Do we need to return a *? 
 func NewGameController(ctx context.Context, client *mongo.Client)  *GameController {
   var gc GameController
@@ -63,8 +51,6 @@ func NewGameController(ctx context.Context, client *mongo.Client)  *GameControll
     Character:          "",
     ResultMessage:      "",
     CorrectAnswer:      "",
-    HardMode:           "false",
-    HardModeTimer:      5,
     IsFinished:         "false",
     CurrentPlayer:      "",
     CurrentPlayerID:    "",
@@ -94,7 +80,6 @@ func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
     Character: "",
     ResultMessage: "",
     CorrectAnswer: "",
-    HardMode: "false",
     IsFinished: "false",
     CurrentPlayer: "",
     TotalScore: 0,
@@ -165,15 +150,24 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
           gc.data.CurrentPage-- 
 
         } else { // We don't want to insert same user into the db each time we press "Next Page" button
-          var document interface{}
 
+          // Get the player rank 
+          rank, err := gc.model.GetPlayerRank(gc.data.CurrentPlayerID)
+          if err != nil {
+            fmt.Printf("GetPlayerRank() error: %v", err)
+          } else {
+            gc.data.CurrentRank = rank
+            fmt.Println("gc.data.CurrentRank = ", gc.data.CurrentRank) // FIXME: Always 0
+          }
+          
+          var document interface{}
           // As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
           document = bson.M {
             "ID":       gc.data.CurrentPlayerID, // At this point this is empty, but we populate it in the model with `bson ...` annotation  
             "Username": gc.data.CurrentPlayer,                  
             "Score":    gc.data.TotalScore,
+            "Rank":     gc.data.CurrentRank,
           }
-
 
           // Add the player to the database
           fmt.Println("document: ", document)
@@ -190,13 +184,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
               gc.data.CurrentPlayerID = id.Hex()
             }
 
-            // Get the player rank 
-            rank, err := gc.model.GetPlayerRank(gc.data.CurrentPlayerID)
-            if err != nil {
-              fmt.Printf("GetPlayerRank() error: %v", err)
-            } else {
-              gc.data.CurrentRank = rank
-            }
+          
             
           }
         } 

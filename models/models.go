@@ -52,6 +52,10 @@ func (m *Model) InsertMany(docs []interface{}) (*mongo.InsertManyResult, error) 
   return result, err
 }
 
+
+
+
+// FIXME: This doesn't count the correct rank
 func (m *Model) GetPlayerRank(playerID string) (int64, error) {
   collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
   ctx, _ := context.WithTimeout(context.Background(), 10 * time.Second)
@@ -59,7 +63,10 @@ func (m *Model) GetPlayerRank(playerID string) (int64, error) {
   // To get the player rank, we count the number of players that exist before him.
   // https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/count/
   // Added Key: and Value: in order to get rid of "unkeyed values" warnings
-  filter := bson.D{{Key: "ID", Value: bson.D{{Key: "$lt", Value: playerID}}}}
+
+
+  //   filter := bson.M{"ID": bson.M{"$lt": playerID}} doesn't work either
+  filter := bson.D{{Key: "ID", Value: bson.D{{Key: "$lt", Value: playerID}}}} // FIXME: _id doesn't work, ID gives a number but its incorrect? 
   position, err := collection.CountDocuments(ctx, filter)
 
   return position, err
@@ -73,6 +80,7 @@ type DocumentSchema struct{
   ID            string  `bson:"_id, omitempty"` // TODO: Explore the potential of bson notation
   Username      string  // Has to have the same name as the corresponding field in the database 
   Score         int     
+  Rank          int64   //`bson:"Rank"` // FIXME: This is always 0 for some reason 
 }
 
 // Pagination logic
