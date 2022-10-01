@@ -10,7 +10,7 @@
     <button hidden="hidden">Submit</button>
   </form>
   
-  <h2>Current score: <span class="total-score">{{.TotalScore}}</span></h2>
+  <h2>Current score: <span class="total-score">{{.CurrentPlayerScore}}</span></h2>
   
   <h3>{{.ResultMessage}}<span class="correct-answer">{{.CorrectAnswer}}</span></h3>
  
@@ -21,7 +21,7 @@
 {{end}}
 
 {{ define "template-finish" }}
-  <h2>The game is finished. Your total score is: <span class="total-score">{{.TotalScore}}</span></h2>
+  <h2>The game is finished. Your total score is: <span class="total-score">{{.CurrentPlayerScore}}</span></h2>
 
   <!-- TODO: This properly goes back to the main page, but we need to somehow reset all the data that was saved during the previous session so that we can start over-->
   <input class="go-back-button" type=button onClick="parent.location='/'" value='Go back to the Main Page'>
@@ -36,7 +36,7 @@
 <!-- TODO: Top10: We need to add if index > 10 break and then print only the current user results -->
 {{ define "template-scoreboard"}}
   <h1>Scoreboard</h1>
-  <h2>Your rank is: <span class="player-rank">{{.CurrentRank}}</span></h2>
+  <h2>Your rank is: <span class="player-rank">{{.CurrentPlayerRank}}</span></h2>
   <table>
     <thead>
       <tr>
@@ -47,7 +47,7 @@
     </thead>
     <tbody>
       {{ range $index, $element := .Scoreboard }}
-      {{ if eq $element.ID $.CurrentPlayerID }} 
+      {{ if eq $element.ID $.CurrentPlayerStringID }} 
       <!-- $.CurrentPlayerID because range goes into the Scoreboard and we use $ like .. in terminal to go up one level-->
             <tr class="active-row">
               <!--<td>{{ inc $index }}</td> <!-- FIXME: Index shouldn't go back from 1 on pages other than the first one -->
@@ -57,8 +57,7 @@
           </tr>
         {{ else }}
           <tr>
-            <td>{{ $element.Rank }}</td> <!-- FIXME: CurrentRank shouldn't be here. Its corrent for the current player, but if its here then
-                                                     all players have that same rank -->
+            <td>{{ $element.Rank }}</td> 
             <td>{{ $element.Username }}</td>
             <td>{{ $element.Score }}</td>
           </tr>
