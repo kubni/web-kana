@@ -1,5 +1,21 @@
 // TODO: Error checking inside function definitions in models.go or in controllers.go?
 
+/* TODO:
+  1) Make usernames unique 
+  2) Play again button 
+*/
+
+/* FIXME:
+  1) For example, if there are 5 players in the scoreboard, and 2, 3. have the same rank (for example 2), players 4 and 5 will have ranks 
+     4 and 5 instead of 3 and 4.
+        // Design choice: 
+            *) Ranks: 1, 2, 2, 3, 4 
+                // I can just do $inc on LTE and then $dec only the current player's rank
+            *) Ranks: 1, 2, 3, 4, 5 (even though 2. and 3. player have the same score)
+
+*/
+
+
 package controllers
 
 import (
@@ -15,6 +31,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+// TODO: Make this generic
+type OnChangeFunction func(string) bool 
 
 type TemplateData struct {
 	PageTitle             string
@@ -32,6 +51,8 @@ type TemplateData struct {
 	CurrentPage           int
 	NumOfPages            int
 	MessageForUser        string
+  
+  FunctionTest          OnChangeFunction 
 }
 
 type GameController struct {
@@ -71,7 +92,7 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 
 // Main page (selection) controller
 func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
-	// TODO: Why doesn't this reset the data?
+	// TODO: Why doesn't this reset the data after we go back to main page with the button?
 	/*
 		  gc.data = TemplateData{
 			PageTitle:     "",
@@ -128,6 +149,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// TODO: Get rid of the "double"  ifs for same thing.
+        // Javascript frontend validation?
 
 		// Check if the finish button has been clicked, if it was, we don't check the answer and the game stops.
 		if r.FormValue("isFinished") == "true" {
@@ -140,7 +162,15 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 		if gc.data.IsFinished == "true" {
 			// Parse the username
 			if r.FormValue("username") != "" {
-				gc.data.CurrentPlayer = r.FormValue("username")
+        // TODO: Is this needed? We assign a function that we can call in the template
+        gc.data.FunctionTest = gc.model.CheckIfUsernameAlreadyExists
+
+        if gc.model.CheckIfUsernameAlreadyExists(r.FormValue("username")) {
+          fmt.Println("Username already exists. Please choose another one.")
+          gc.data.CurrentPlayer = "DuplicateUsername"
+        } else {
+   				gc.data.CurrentPlayer = r.FormValue("username")
+        }
 			}
 
 			// If the username isn't empty (which only happens the first time, read the comments above and fix it)
@@ -186,7 +216,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 				gc.data.CurrentPlayerRank = gc.model.GetAndSetPlayerRank(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
 
 				// Update the ranks of other players that are below the current player.
-				gc.model.UpdateOtherRanks(gc.data.CurrentPlayerScore)
+				gc.model.UpdateOtherRanks(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
 
 				// TODO: Change this to bool
 				gc.data.DisplayScoreboard = "true"

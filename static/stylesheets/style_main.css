@@ -3,22 +3,22 @@
   --clr-neutral: #f9f9f9;
 }
 
-
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-
 body {
-  background-image: url("../images/sakura_branch.jpg"); 
+  background-image: url("../images/sakura_branch.jpg");
   background-color: #333;
   background-blend-mode: multiply;
-  background-position:right top;
+  background-position: right top;
   background-repeat: no-repeat;
   z-index: -1;
-
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
 }
 h1,
 h2,
@@ -33,20 +33,26 @@ p {
   gap: 1rem;
   flex-direction: column;
   color: var(--clr-neutral);
-  text-shadow: 1px 1px var(--clr-primary); 
+  text-shadow: 1px 1px var(--clr-primary);
   animation: drop 1s ease forwards;
- }
+}
 
 header {
   /*margin-top: 25rem; */
-  margin-top: -5rem; 
+  /* margin-top: -5rem; */
   font-style: oblique;
 }
 
-@keyframes drop{
-  0% {}
-  70% {transform: translateY(35rem)}
-  100% {transform: translateY(30rem)}
+@keyframes drop {
+  0% {
+    transform: translateY(-50%)
+  }
+  70% {
+    transform: translateY(20%); 
+  }
+  100% {
+    transform: translateY(0%);
+  }
 }
 
 .buttons {
@@ -66,7 +72,7 @@ input {
   background-color: var(--clr-primary);
   cursor: pointer;
   box-shadow: 5px 5px #888888;
-} 
+}
 
 input:hover {
   background-color: #f0c8d6;

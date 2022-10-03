@@ -27,7 +27,8 @@
   <input class="go-back-button" type=button onClick="parent.location='/'" value='Go back to the Main Page'>
 
   <h2>If you want to save your result, type in your username:</h2> 
-  <form action="/game" method="POST">
+  <form id="usernameForm" action="/game" method="POST">
+    <!-- TODO: Invoke username check here -->
     <input type="text" name="username">
   </form>
 {{ end }}
@@ -50,7 +51,6 @@
       {{ if eq $element.ID $.CurrentPlayerStringID }} 
       <!-- $.CurrentPlayerID because range goes into the Scoreboard and we use $ like .. in terminal to go up one level-->
             <tr class="active-row">
-              <!--<td>{{ inc $index }}</td> <!-- FIXME: Index shouldn't go back from 1 on pages other than the first one -->
               <td>{{ $element.Rank }}</td>
               <td>{{ $element.Username }}</td>
               <td>{{ $element.Score }}</td>

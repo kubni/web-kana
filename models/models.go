@@ -61,6 +61,7 @@ type DocumentSchema struct {
 	Rank     int
 }
 
+
 func (m *Model) GetAndSetPlayerRank(currentPlayerObjectID primitive.ObjectID, currentPlayerScore int) int64 {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -89,14 +90,23 @@ func (m *Model) GetAndSetPlayerRank(currentPlayerObjectID primitive.ObjectID, cu
 
 // We must update the ranks of the players that are now lower in rank compared to the currently added player
 // We can do that by comparing their scores.
-func (m *Model) UpdateOtherRanks(currentPlayerScore int) {
+func (m *Model) UpdateOtherRanks(currentPlayerObjectID primitive.ObjectID, currentPlayerScore int) {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-
+  
 	// TODO: bson.D or M?
-	filter := bson.M{"Score": bson.D{{Key: "$lt", Value: currentPlayerScore}}}
+	filter := bson.M{"Score": bson.D{{Key: "$lte", Value: currentPlayerScore}}}
 	update := bson.M{"$inc": bson.M{"Rank": 1}}
-	collection.UpdateMany(ctx, filter, update)
+  _, err := collection.UpdateMany(ctx, filter, update)
+  if err != nil {
+    panic(err)
+  } 
+  // Fix the current player's rank:
+  update = bson.M{"$inc": bson.M{"Rank": -1}}
+  _, err = collection.UpdateByID(ctx, currentPlayerObjectID, update)
+  if err != nil {
+    panic(err)
+  } 
 }
 
 // Pagination logic
@@ -171,4 +181,22 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 	// fmt.Println("Scoreboard: ", scoreboard)
 	// In case no error occured
 	return scoreboard, numOfPages
+}
+
+
+
+// Index for username 
+func (m *Model) CheckIfUsernameAlreadyExists(providedUsername string) bool {
+	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+  filter := bson.M{"Username": bson.M{"$eq": providedUsername}}
+  result := collection.FindOne(ctx, filter)
+  fmt.Println("Println result.ERr() usernametest: ", result.Err().Error())
+  
+  if result.Err() == mongo.ErrNoDocuments {
+    return false 
+  } else {
+    return true
+  }
 }
