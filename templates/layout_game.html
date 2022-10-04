@@ -24,11 +24,10 @@
   <h2>The game is finished. Your total score is: <span class="total-score">{{.CurrentPlayerScore}}</span></h2>
 
   <!-- TODO: This properly goes back to the main page, but we need to somehow reset all the data that was saved during the previous session so that we can start over-->
-  <input class="go-back-button" type=button onClick="parent.location='/'" value='Go back to the Main Page'>
+  <input class="go-back-button" type=button onclick="parent.location='/'" value='Go back to the Main Page'>
 
   <h2>If you want to save your result, type in your username:</h2> 
-  <form id="usernameForm" action="/game" method="POST">
-    <!-- TODO: Invoke username check here -->
+<form id="usernameForm" action="/game" method="POST"> 
     <input type="text" name="username">
   </form>
 {{ end }}
@@ -107,7 +106,13 @@
       {{ else if eq .DisplayScoreboard "false" }}
         {{ template "template-finish" . }} 
       {{ else }}
-        {{ template "template-scoreboard" . }}
+        <!-- We enter here after the username is provided -->
+          {{ if eq .IsUsernameValid "true" }}
+            {{ template "template-scoreboard" . }}
+          {{ else }}
+            {{ template "template-finish" .}}
+          <p color="red">The username you entered already exists, please choose another one.</p>
+          {{ end }} 
       {{ end }}
       
     </div>

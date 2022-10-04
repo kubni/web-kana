@@ -1,20 +1,19 @@
 // TODO: Error checking inside function definitions in models.go or in controllers.go?
 
 /* TODO:
-  1) Make usernames unique 
-  2) Play again button 
+1) Make usernames unique
+2) Play again button
 */
 
 /* FIXME:
-  1) For example, if there are 5 players in the scoreboard, and 2, 3. have the same rank (for example 2), players 4 and 5 will have ranks 
-     4 and 5 instead of 3 and 4.
-        // Design choice: 
-            *) Ranks: 1, 2, 2, 3, 4 
-                // I can just do $inc on LTE and then $dec only the current player's rank
-            *) Ranks: 1, 2, 3, 4, 5 (even though 2. and 3. player have the same score)
+1) For example, if there are 5 players in the scoreboard, and 2, 3. have the same rank (for example 2), players 4 and 5 will have ranks
+   4 and 5 instead of 3 and 4.
+      // Design choice:
+          *) Ranks: 1, 2, 2, 3, 4
+              // I can just do $inc on LTE and then $dec only the current player's rank
+          *) Ranks: 1, 2, 3, 4, 5 (even though 2. and 3. player have the same score)
 
 */
-
 
 package controllers
 
@@ -33,7 +32,7 @@ import (
 )
 
 // TODO: Make this generic
-type OnChangeFunction func(string) bool 
+type OnChangeFunction func(string) bool
 
 type TemplateData struct {
 	PageTitle             string
@@ -46,13 +45,14 @@ type TemplateData struct {
 	CurrentPlayerStringID string // For comparison in layout_game.html
 	CurrentPlayerRank     int64
 	CurrentPlayerScore    int
+	IsUsernameValid       string
 	DisplayScoreboard     string
 	Scoreboard            []models.DocumentSchema
 	CurrentPage           int
 	NumOfPages            int
 	MessageForUser        string
-  
-  FunctionTest          OnChangeFunction 
+
+	FunctionTest OnChangeFunction
 }
 
 type GameController struct {
@@ -76,6 +76,7 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 		CurrentPlayerStringID: "",
 		CurrentPlayerRank:     0,
 		CurrentPlayerScore:    0,
+		IsUsernameValid:       "false",
 		DisplayScoreboard:     "false",
 		Scoreboard:            []models.DocumentSchema{},
 		CurrentPage:           0,
@@ -149,7 +150,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// TODO: Get rid of the "double"  ifs for same thing.
-        // Javascript frontend validation?
+		// Javascript frontend validation?
 
 		// Check if the finish button has been clicked, if it was, we don't check the answer and the game stops.
 		if r.FormValue("isFinished") == "true" {
@@ -162,68 +163,88 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 		if gc.data.IsFinished == "true" {
 			// Parse the username
 			if r.FormValue("username") != "" {
-        // TODO: Is this needed? We assign a function that we can call in the template
-        gc.data.FunctionTest = gc.model.CheckIfUsernameAlreadyExists
-
-        if gc.model.CheckIfUsernameAlreadyExists(r.FormValue("username")) {
-          fmt.Println("Username already exists. Please choose another one.")
-          gc.data.CurrentPlayer = "DuplicateUsername"
-        } else {
-   				gc.data.CurrentPlayer = r.FormValue("username")
-        }
+				gc.data.CurrentPlayer = r.FormValue("username")
 			}
 
 			// If the username isn't empty (which only happens the first time, read the comments above and fix it)
 			if gc.data.CurrentPlayer != "" {
+				if gc.model.CheckIfUsernameAlreadyExists(gc.data.CurrentPlayer) {
 
-				if r.FormValue("isNextPageClicked") == "true" {
-					gc.data.CurrentPage++
-				} else if r.FormValue("isPreviousPageClicked") == "true" {
-					gc.data.CurrentPage--
-				} else { // We don't want to insert same user into the db each time we press "Next Page" button
+          /*
+            FIXME:
+            This successfully prevents the insertion of a username that already exists and returns the player to the same finish page where 
+            he can choose another name again.
+            Also, if he enters another name that doesn't already exists in the db, he will be properly added into the db.
 
-					var document interface{}
-					// As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
-					document = bson.M{
-						// TODO: Figure out how does this actually have the value when it doesn't show up in mongosh when I check the document
-						"ID":       gc.data.CurrentPlayerStringID, //  At this point this is empty, but we populate it in the model with `bson ...` annotation
-						"Username": gc.data.CurrentPlayer,
-						"Score":    gc.data.CurrentPlayerScore,
-						"Rank":     gc.data.CurrentPlayerRank,
-					}
+            Problems:
+                1) He won't get highlighted or even shown at all in the scoreboard.
+                2) Also, if Next Page button is clicked, we enter that if with the <p> in layout_game.html
+            
 
-					// Add the player to the database
-					fmt.Println("document: ", document)
-					fmt.Println("Inserting the user into the db...")
+            // Something probably happens with the forms, also with the TemplateData values when the reset happens.
 
-					insertOneResult, err := gc.model.InsertOne(document)
-					if err != nil {
-						fmt.Printf("InsertOne() error: %v", err)
-					} else {
-						fmt.Println("Insert result: ", insertOneResult)
+            // gc.data.DisplayScoreboard = "true" and the surrounding code should probably be put somewhere else.
+          
 
-						// Decode the insertOneResult into a string
-						if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
-							gc.data.CurrentPlayerObjectID = id
-							gc.data.CurrentPlayerStringID = id.Hex()
+          */
+
+
+
+
+					fmt.Println("Username already exists. Please choose another one.")
+					gc.data.IsUsernameValid = "false"
+				} else {
+					gc.data.IsUsernameValid = "true"
+
+					if r.FormValue("isNextPageClicked") == "true" {
+						gc.data.CurrentPage++
+					} else if r.FormValue("isPreviousPageClicked") == "true" {
+						gc.data.CurrentPage--
+					} else { // We don't want to insert same user into the db each time we press "Next Page" button
+
+						var document interface{}
+						// As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
+						document = bson.M{
+							// TODO: Figure out how does this actually have the value when it doesn't show up in mongosh when I check the document
+							"ID":       gc.data.CurrentPlayerStringID, //  At this point this is empty, but we populate it in the model with `bson` annotation
+							"Username": gc.data.CurrentPlayer,
+							"Score":    gc.data.CurrentPlayerScore,
+							"Rank":     gc.data.CurrentPlayerRank,
 						}
 
+						// Add the player to the database
+						fmt.Println("document: ", document)
+						fmt.Println("Inserting the user into the db...")
+
+						insertOneResult, err := gc.model.InsertOne(document)
+						if err != nil {
+							fmt.Printf("InsertOne() error: %v", err)
+						} else {
+							fmt.Println("Insert result: ", insertOneResult)
+
+							// Decode the insertOneResult into a string
+							if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
+								gc.data.CurrentPlayerObjectID = id
+								gc.data.CurrentPlayerStringID = id.Hex()
+							}
+						}
+						//}
+						// TODO: We have to get the rank here, because we are setting the gc.data.CurrentPlayerID after we insert the player into the db
+
+						// Get and set the player rank
+						gc.data.CurrentPlayerRank = gc.model.GetAndSetPlayerRank(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
+
+						// Update the ranks of other players that are below the current player.
+						// FIXME: This doesn't work as it should.
+						gc.model.UpdateOtherRanks(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
+
+						// TODO: Change this to bool
+						gc.data.DisplayScoreboard = "true"
+						gc.data.Scoreboard, gc.data.NumOfPages = gc.model.GetScoreboard(gc.data.CurrentPage)
 					}
 				}
-				// TODO: We have to get the rank here, because we are setting the gc.data.CurrentPlayerID after we insert the player into the db
-
-				// Get and set the player rank
-				gc.data.CurrentPlayerRank = gc.model.GetAndSetPlayerRank(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
-
-				// Update the ranks of other players that are below the current player.
-				gc.model.UpdateOtherRanks(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
-
-				// TODO: Change this to bool
-				gc.data.DisplayScoreboard = "true"
-				gc.data.Scoreboard, gc.data.NumOfPages = gc.model.GetScoreboard(gc.data.CurrentPage)
 			}
 		} else {
-
 			// Parse the answer
 			answer := r.FormValue("answer")
 

@@ -55,6 +55,7 @@ func (m *Model) InsertMany(docs []interface{}) (*mongo.InsertManyResult, error) 
 // TODO: A better way than a global value?
 type DocumentSchema struct {
 	// TODO: How does this bson annotation actually works?
+      // It matches the fields during the Unmarshal-ing // Check if this is actually the case
 	ID       string `bson:"_id, omitempty"`
 	Username string // Has to have the same name as the corresponding field in the database
 	Score    int
@@ -186,17 +187,19 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 
 
 // Index for username 
+// TODO: Should i move this to templates.go? But then i would have to import all those packages that are needed for this functions there.
 func (m *Model) CheckIfUsernameAlreadyExists(providedUsername string) bool {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
   filter := bson.M{"Username": bson.M{"$eq": providedUsername}}
   result := collection.FindOne(ctx, filter)
-  fmt.Println("Println result.ERr() usernametest: ", result.Err().Error())
+  //fmt.Println("Println result.Err() usernametest: ", result.Err().Error()) // This produces 2 goroutine panics regarding memory
   
   if result.Err() == mongo.ErrNoDocuments {
     return false 
   } else {
+    
     return true
   }
 }
