@@ -112,6 +112,7 @@
           {{ if eq .IsUsernameValid "true" }}
             {{ template "template-scoreboard" . }}
           {{ else }}
+        <!-- For some reason, we never enter here.-->
             {{ template "template-finish" .}}
           <p color="red">The username you entered already exists, please choose another one.</p>
           {{ end }} 
