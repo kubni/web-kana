@@ -72,7 +72,9 @@
         <input class="previouspage-button" type="submit" value="Previous Page">
       </form>
     {{ end }}
-    <!-- TODO: CSS breaks when only Previous button is displayed -->
+
+
+    <!-- TODO: Does this inc below do anything?-->
     {{ if lt (inc .CurrentPage) .NumOfPages }} <!-- FIXME: There has to be a better way, i inc this because it has to start from 0 or it won't showthe first page-->
       <form action="/game" method="POST">
         <input type="text" value="true" name="isNextPageClicked" hidden="hidden">  

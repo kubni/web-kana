@@ -55,13 +55,12 @@ func (m *Model) InsertMany(docs []interface{}) (*mongo.InsertManyResult, error) 
 // TODO: A better way than a global value?
 type DocumentSchema struct {
 	// TODO: How does this bson annotation actually works?
-      // It matches the fields during the Unmarshal-ing // Check if this is actually the case
+	// It matches the fields during the Unmarshal-ing // Check if this is actually the case
 	ID       string `bson:"_id, omitempty"`
 	Username string // Has to have the same name as the corresponding field in the database
 	Score    int
 	Rank     int
 }
-
 
 func (m *Model) GetAndSetPlayerRank(currentPlayerObjectID primitive.ObjectID, currentPlayerScore int) int64 {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
@@ -94,21 +93,41 @@ func (m *Model) GetAndSetPlayerRank(currentPlayerObjectID primitive.ObjectID, cu
 func (m *Model) UpdateOtherRanks(currentPlayerObjectID primitive.ObjectID, currentPlayerScore int) {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-  
+
 	// TODO: bson.D or M?
 	filter := bson.M{"Score": bson.D{{Key: "$lte", Value: currentPlayerScore}}}
 	update := bson.M{"$inc": bson.M{"Rank": 1}}
-  _, err := collection.UpdateMany(ctx, filter, update)
-  if err != nil {
-    panic(err)
-  } 
-  // Fix the current player's rank:
-  update = bson.M{"$inc": bson.M{"Rank": -1}}
-  _, err = collection.UpdateByID(ctx, currentPlayerObjectID, update)
-  if err != nil {
-    panic(err)
-  } 
+	_, err := collection.UpdateMany(ctx, filter, update)
+	if err != nil {
+		panic(err)
+	}
+	// Fix the current player's rank:
+	update = bson.M{"$inc": bson.M{"Rank": -1}}
+	_, err = collection.UpdateByID(ctx, currentPlayerObjectID, update)
+	if err != nil {
+		panic(err)
+	}
 }
+
+
+// Index for username?
+// TODO: Should i move this to templates.go? But then i would have to import all those packages that are needed for this functions there.
+func (m *Model) CheckIfUsernameAlreadyExists(providedUsername string) bool {
+	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	filter := bson.M{"Username": bson.M{"$eq": providedUsername}}
+	result := collection.FindOne(ctx, filter)
+	// fmt.Println("Println result.Err() usernametest: ", result.Err().Error()) // This produces 2 goroutine panics regarding memory
+
+	if result.Err() == mongo.ErrNoDocuments {
+		return false
+	} else {
+		return true
+	}
+}
+
+
 
 // Pagination logic
 func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
@@ -118,6 +137,16 @@ func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
 
 	return int(numOfPages)
 }
+
+
+
+
+
+/* This function always returns a slice of 10 players  for the currentPage (which is provided in the call to GetScoreboard in the controller)
+   The currentPage is updated after NextPage/PreviousPage buttons are clicked and then we have new Post request which again calls this func.
+   for the next/previous 10 (or whatever we set playersPerPage to) players.
+*/
+
 
 func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
@@ -145,9 +174,20 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 	j := 1
 	for cursor.Next(context.Background()) {
 
+ 
 		// We need to decode 10 players starting from the one that is at 10*currentPage so we skip the ones before it.
-		// TODO: There has to be a better way of doing this
+      /* We do this because, for the first page we need 10 players (10 * 1), for the second we need 10 again but WITHOUT THE 10 ON THE
+         FIRST PAGE.
+      */
+      
+    // TODO: Where do we increment/decrement this currentPage?
+      // We increment/decrement it in the controllers.go by parsing the form fields after clicking Next Page/Previous Page button.
+
+    fmt.Println("CURRENT PAGE : ", currentPage)
+
+
 		if j < playersPerPage*currentPage {
+      fmt.Println("j: ", j)
 			j++
 			continue
 		}
@@ -164,7 +204,7 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		// fmt.Println("result.ID: ", result.ID) // Program correctly maps the IDs to ID field of our result
+		//fmt.Println("result.ID: ", result.ID) // Program correctly maps the IDs to ID field of our result
 		scoreboard = append(scoreboard, result)
 
 		i++
@@ -185,21 +225,3 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 }
 
 
-
-// Index for username 
-// TODO: Should i move this to templates.go? But then i would have to import all those packages that are needed for this functions there.
-func (m *Model) CheckIfUsernameAlreadyExists(providedUsername string) bool {
-	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-
-  filter := bson.M{"Username": bson.M{"$eq": providedUsername}}
-  result := collection.FindOne(ctx, filter)
-  //fmt.Println("Println result.Err() usernametest: ", result.Err().Error()) // This produces 2 goroutine panics regarding memory
-  
-  if result.Err() == mongo.ErrNoDocuments {
-    return false 
-  } else {
-    
-    return true
-  }
-}
