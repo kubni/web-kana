@@ -6,7 +6,7 @@
   </div>
 
   <form action="/game" method="POST">
-    <input type="text" name="answer">
+    <input type="text" name="answer" autofocus>
     <button hidden="hidden">Submit</button>
   </form>
   
@@ -33,7 +33,6 @@
 {{ end }}
 
 
-<!-- TODO: Top10: We need to add if index > 10 break and then print only the current user results -->
 {{ define "template-scoreboard"}}
   <h1>Scoreboard</h1>
   <h2>Your rank is: <span class="player-rank">{{.CurrentPlayerRank}}</span></h2>
@@ -73,9 +72,8 @@
       </form>
     {{ end }}
 
-
-    <!-- TODO: Does this inc below do anything?-->
-    {{ if lt (inc .CurrentPage) .NumOfPages }} <!-- FIXME: There has to be a better way, i inc this because it has to start from 0 or it won't showthe first page-->
+    <!-- FIXME: There has to be a better way, i inc this because it has to start from 0 or it won't showthe first page -->
+    {{ if lt (inc .CurrentPage) .NumOfPages }} 
       <form action="/game" method="POST">
         <input type="text" value="true" name="isNextPageClicked" hidden="hidden">  
         <input class="nextpage-button" type="submit" value="Next Page">
@@ -113,8 +111,7 @@
             <p>Username is valid!!!! </p>
             {{ template "template-scoreboard" . }}
           {{ else }}
-            <!-- FIXME: For some reason, we never enter here, even though we can enter the if above .-->
-
+            <!-- FIXME: For some reason, we never enter here, even though we can enter the if above. -->
           <p color="red">The username you entered already exists, please choose another one.</p>
             {{ template "template-finish" .}}
           {{ end }} 

@@ -55,7 +55,7 @@ func (m *Model) InsertMany(docs []interface{}) (*mongo.InsertManyResult, error) 
 // TODO: A better way than a global value?
 type DocumentSchema struct {
 	// TODO: How does this bson annotation actually works?
-	  // It matches the fields during the Unmarshaling (Decoding) // Check if this is actually the case
+	// It matches the fields during the Unmarshaling (Decoding) // Check if this is actually the case
 	ID       string `bson:"_id, omitempty"`
 	Username string // Has to have the same name as the corresponding field in the database
 	Score    int
@@ -88,9 +88,9 @@ func (m *Model) GetAndSetPlayerRank(currentPlayerObjectID primitive.ObjectID, cu
 	return position
 }
 
-/* 
-  We must update the ranks of the players that are now lower in rank compared to the currently added player
-  We can do that by comparing their scores.
+/*
+	We must update the ranks of the players that are now lower in rank compared to the currently added player
+	We can do that by comparing their scores.
 */
 func (m *Model) UpdateOtherRanks(currentPlayerObjectID primitive.ObjectID, currentPlayerScore int) {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
@@ -166,8 +166,6 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 	i := 1
 	j := 1
 	for cursor.Next(context.Background()) {
-		// We need to decode 10 players starting from the one that is at 10*currentPage so we skip the ones before it.
-
 		/*
 		   We increment/decrement currentPage in the controllers.go by parsing the form fields after clicking Next Page/Previous Page button.
 		   Therefore, this if practically serves as a loop.

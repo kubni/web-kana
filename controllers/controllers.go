@@ -1,18 +1,5 @@
-// TODO: Error checking inside function definitions in models.go or in controllers.go?
-
 /* TODO:
-1) Make usernames unique
 2) Play again button
-*/
-
-/* FIXME:
-1) For example, if there are 5 players in the scoreboard, and 2, 3. have the same rank (for example 2), players 4 and 5 will have ranks
-   4 and 5 instead of 3 and 4.
-      // Design choice:
-          *) Ranks: 1, 2, 2, 3, 4
-              // I can just do $inc on LTE and then $dec only the current player's rank
-          *) Ranks: 1, 2, 3, 4, 5 (even though 2. and 3. player have the same score)
-
 */
 
 package controllers
@@ -21,7 +8,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"web_kana_v1/kana/kana_logic"
+	
+  "web_kana_v1/kana/kana_logic"
 	"web_kana_v1/kana/tables"
 	"web_kana_v1/models"
 	"web_kana_v1/templates"
@@ -30,9 +18,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
-// TODO: Make this generic
-type OnChangeFunction func(string) bool
 
 type TemplateData struct {
 	PageTitle             string
@@ -51,8 +36,6 @@ type TemplateData struct {
 	CurrentPage           int
 	NumOfPages            int
 	MessageForUser        string
-
-	FunctionTest OnChangeFunction
 }
 
 type GameController struct {
@@ -163,7 +146,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 			if r.FormValue("username") != "" && !gc.model.CheckIfUsernameAlreadyExists(r.FormValue("username")) {
 				gc.data.CurrentPlayer = r.FormValue("username")
 			} else {
-        // Potential problem: We enter here every time we go to a next or previous page. This isn't a problem for now.
+				// Potential problem: We enter here every time we go to a next or previous page. This isn't a problem for now.
 				fmt.Println("The username you entered isn't valid. Please enter another one.")
 				gc.data.IsUsernameValid = "false"
 			}
@@ -178,11 +161,9 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 				} else if r.FormValue("isPreviousPageClicked") == "true" {
 					gc.data.CurrentPage--
 				} else { // We don't want to insert same user into the db each time we press "Next Page" button
-
 					var document interface{}
 					// As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
 					document = bson.M{
-						// TODO: Figure out how does this actually have the value when it doesn't show up in mongosh when I check the document
 						"ID":       gc.data.CurrentPlayerStringID, //  At this point this is empty, but we populate it in the model with `bson` notation
 						"Username": gc.data.CurrentPlayer,
 						"Score":    gc.data.CurrentPlayerScore,
