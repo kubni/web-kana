@@ -110,11 +110,13 @@
       {{ else }}
         <!-- We enter here after the username is provided -->
           {{ if eq .IsUsernameValid "true" }}
+            <p>Username is valid!!!! </p>
             {{ template "template-scoreboard" . }}
           {{ else }}
-        <!-- For some reason, we never enter here.-->
-            {{ template "template-finish" .}}
+            <!-- FIXME: For some reason, we never enter here, even though we can enter the if above .-->
+
           <p color="red">The username you entered already exists, please choose another one.</p>
+            {{ template "template-finish" .}}
           {{ end }} 
       {{ end }}
       

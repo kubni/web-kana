@@ -55,7 +55,7 @@ func (m *Model) InsertMany(docs []interface{}) (*mongo.InsertManyResult, error) 
 // TODO: A better way than a global value?
 type DocumentSchema struct {
 	// TODO: How does this bson annotation actually works?
-	// It matches the fields during the Unmarshal-ing // Check if this is actually the case
+	  // It matches the fields during the Unmarshaling (Decoding) // Check if this is actually the case
 	ID       string `bson:"_id, omitempty"`
 	Username string // Has to have the same name as the corresponding field in the database
 	Score    int
@@ -88,8 +88,10 @@ func (m *Model) GetAndSetPlayerRank(currentPlayerObjectID primitive.ObjectID, cu
 	return position
 }
 
-// We must update the ranks of the players that are now lower in rank compared to the currently added player
-// We can do that by comparing their scores.
+/* 
+  We must update the ranks of the players that are now lower in rank compared to the currently added player
+  We can do that by comparing their scores.
+*/
 func (m *Model) UpdateOtherRanks(currentPlayerObjectID primitive.ObjectID, currentPlayerScore int) {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -109,7 +111,6 @@ func (m *Model) UpdateOtherRanks(currentPlayerObjectID primitive.ObjectID, curre
 	}
 }
 
-
 // Index for username?
 // TODO: Should i move this to templates.go? But then i would have to import all those packages that are needed for this functions there.
 func (m *Model) CheckIfUsernameAlreadyExists(providedUsername string) bool {
@@ -127,31 +128,23 @@ func (m *Model) CheckIfUsernameAlreadyExists(providedUsername string) bool {
 	}
 }
 
-
-
 // Pagination logic
 func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
 	numberOfPlayers := dbLogic.CountAllDocuments(dbLogic.GetCollection(m.client, m.dbName, m.collectionName))
-
 	numOfPages := math.Ceil(float64(numberOfPlayers) / float64(playersPerPage))
 
 	return int(numOfPages)
 }
-
-
-
-
 
 /* This function always returns a slice of 10 players  for the currentPage (which is provided in the call to GetScoreboard in the controller)
    The currentPage is updated after NextPage/PreviousPage buttons are clicked and then we have new Post request which again calls this func.
    for the next/previous 10 (or whatever we set playersPerPage to) players.
 */
 
-
 func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
-	// Sort by score
-	opts := options.Find().SetSort(bson.D{{Key: "Score", Value: -1}})
+	// Sort by rank
+	opts := options.Find().SetSort(bson.D{{Key: "Rank", Value: 1}})
 
 	// collection.Find will return a Cursor, which is basically a pointer to the set of documents
 	cursor, err := collection.Find(context.Background(), bson.D{}, opts)
@@ -173,21 +166,17 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 	i := 1
 	j := 1
 	for cursor.Next(context.Background()) {
-
- 
 		// We need to decode 10 players starting from the one that is at 10*currentPage so we skip the ones before it.
-      /* We do this because, for the first page we need 10 players (10 * 1), for the second we need 10 again but WITHOUT THE 10 ON THE
-         FIRST PAGE.
-      */
-      
-    // TODO: Where do we increment/decrement this currentPage?
-      // We increment/decrement it in the controllers.go by parsing the form fields after clicking Next Page/Previous Page button.
 
-    fmt.Println("CURRENT PAGE : ", currentPage)
+		/*
+		   We increment/decrement currentPage in the controllers.go by parsing the form fields after clicking Next Page/Previous Page button.
+		   Therefore, this if practically serves as a loop.
+		   We do this because, for the first page we need 10 players (10 * 1), for the second we need 10 again but WITHOUT THE 10 ON THE
+		   FIRST PAGE so we skip them like this.
 
-
+		   TODO: A more efficient way
+		*/
 		if j < playersPerPage*currentPage {
-      fmt.Println("j: ", j)
 			j++
 			continue
 		}
@@ -204,7 +193,8 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		//fmt.Println("result.ID: ", result.ID) // Program correctly maps the IDs to ID field of our result
+
+		// fmt.Println("result.ID: ", result.ID) // Program correctly maps the IDs to ID field of our result
 		scoreboard = append(scoreboard, result)
 
 		i++
@@ -220,8 +210,6 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 	}
 
 	// fmt.Println("Scoreboard: ", scoreboard)
-	// In case no error occured
+	// In case no error occured, we return the scoreboard and the number of pages.
 	return scoreboard, numOfPages
 }
-
-

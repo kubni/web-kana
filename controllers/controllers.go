@@ -149,7 +149,6 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// TODO: Get rid of the "double"  ifs for same thing.
-		// Javascript frontend validation?
 
 		// Check if the finish button has been clicked, if it was, we don't check the answer and the game stops.
 		if r.FormValue("isFinished") == "true" {
@@ -163,16 +162,18 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 			// Parse the username and check if it already exists in the database:
 			if r.FormValue("username") != "" && !gc.model.CheckIfUsernameAlreadyExists(r.FormValue("username")) {
 				gc.data.CurrentPlayer = r.FormValue("username")
+			} else {
+        // Potential problem: We enter here every time we go to a next or previous page. This isn't a problem for now.
+				fmt.Println("The username you entered isn't valid. Please enter another one.")
+				gc.data.IsUsernameValid = "false"
 			}
 
 			// gc.data.CurrentPlayer will not be empty if the entered username is valid (passes the check above)
 			if gc.data.CurrentPlayer != "" {
 				// TODO: Is this field even needed?
-				// Maybe i can use it in template if checks. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				gc.data.IsUsernameValid = "true"
 
 				if r.FormValue("isNextPageClicked") == "true" {
-					fmt.Println("CURRENTPAGE IN CONTROLLER: ", gc.data.CurrentPage)
 					gc.data.CurrentPage++
 				} else if r.FormValue("isPreviousPageClicked") == "true" {
 					gc.data.CurrentPage--
@@ -194,7 +195,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 
 					insertOneResult, err := gc.model.InsertOne(document)
 					if err != nil {
-						fmt.Printf("InsertOne() error: %v", err)
+						panic(err)
 					} else {
 						fmt.Println("Insert result: ", insertOneResult)
 
@@ -205,24 +206,16 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 						}
 					}
 				}
-				// TODO: We have to get the rank here, because we are setting the gc.data.CurrentPlayerID after we insert the player into the db
-
 				// Get and set the player rank
 				gc.data.CurrentPlayerRank = gc.model.GetAndSetPlayerRank(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
 
 				// Update the ranks of other players that are below the current player.
-				// FIXME: This doesn't work as it should.
 				gc.model.UpdateOtherRanks(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
 
 				// TODO: Change this to bool
 				gc.data.DisplayScoreboard = "true"
 
-				fmt.Println("Zovemo GetScoreboard sa parametrom gc.data.currentpage: ", gc.data.CurrentPage)
 				gc.data.Scoreboard, gc.data.NumOfPages = gc.model.GetScoreboard(gc.data.CurrentPage)
-
-				fmt.Println("Gc.data.Scoreboard: ", gc.data.Scoreboard)
-
-				fmt.Println("gc.Data.numofpages: ", gc.data.NumOfPages)
 			}
 		} else {
 			// Parse the answer
@@ -248,31 +241,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 		if err := templates.TmpGame.Execute(w, gc.data); err != nil {
 			panic(err)
 		}
-
 	}
 }
 
 // TODO: Weird things happen if the page goes to the finished screen and the user goes back by using browser back-arrow
-
-/*
-   FIXME:
-   This successfully prevents the insertion of a username that already exists and returns the player to the same finish page where
-   he can choose another name again.
-   Also, if he enters another name that doesn't already exists in the db, he will be properly added into the db.
-
-   Problems:
-       1) He won't get highlighted or even shown at all in the scoreboard.
-       2) Also, if Next Page button is clicked, we enter that if with the <p> in layout_game.html
-
-      3) There is a problem with pagination. UpdateOtherRanks breaks it probably, since those that get their ranks updated past the page
-         on which they were, don't get moved to the next page.
-            // Why is this broken when we are making sure to call GetScoreboard AFTER we call UpdateOtherRanks
-
-
-
-   // Something probably happens with the forms, also with the TemplateData values when the reset happens.
-
-   // gc.data.DisplayScoreboard = "true" and the surrounding code should probably be put somewhere else.
-
-
-*/
