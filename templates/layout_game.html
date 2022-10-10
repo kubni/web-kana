@@ -6,14 +6,15 @@
   </div>
 
   <form action="/game" method="POST">
-    <input type="text" name="answer" autofocus>
+    <input class="answerInput" type="text" name="answer" autofocus>
     <button hidden="hidden">Submit</button>
   </form>
   
-  <h2>Current score: <span class="total-score">{{.CurrentPlayerScore}}</span></h2>
-  
-  <h3>{{.ResultMessage}}<span class="correct-answer">{{.CorrectAnswer}}</span></h3>
- 
+  <div class="resultInfo">
+    <h2>Current score: <span class="total-score">{{.CurrentPlayerScore}}</span></h2>
+    <h3 class="resultMessage">{{.ResultMessage}}<span class="correct-answer">{{.CorrectAnswer}}</span></h3>
+  </div>
+
   <form action="/game" method="POST">
     <input type="text" value="true" name="isFinished" hidden="hidden">
     <input class="finish-button" type="submit" value="Finish">

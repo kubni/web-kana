@@ -8,8 +8,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	
-  "web_kana_v1/kana/kana_logic"
+	"web_kana_v1/kana/kana_logic"
 	"web_kana_v1/kana/tables"
 	"web_kana_v1/models"
 	"web_kana_v1/templates"
@@ -75,29 +74,28 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 
 // Main page (selection) controller
 func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
-	// TODO: Why doesn't this reset the data after we go back to main page with the button?
-	/*
-		  gc.data = TemplateData{
-			PageTitle:     "",
-			Character:     "",
-			ResultMessage: "",
-			CorrectAnswer: "",
-			IsFinished:    "false",
-			CurrentPlayer: "",
-			CurrentPlayerStringID: "",
-			CurrentPlayerRank:     0,
-			CurrentPlayerScore:    0,
-			DisplayScoreboard:     "false",
-			Scoreboard:            []models.DocumentSchema{},
-			CurrentPage:           0,
-			NumOfPages:            1,
-			MessageForUser:        "",
-		}
+	// FIXME: Why doesn't this reset the data after we go back to main page with the button?
+	gc.data = TemplateData{
+		PageTitle:     "",
+		Character:     "",
+		ResultMessage: "",
+		CorrectAnswer: "",
+		IsFinished:    "false",
+		CurrentPlayer: "",
+		// CurrentPlayerObjectID: nil,
+		CurrentPlayerStringID: "",
+		CurrentPlayerRank:     0,
+		CurrentPlayerScore:    0,
+		IsUsernameValid:       "false",
+		DisplayScoreboard:     "false",
+		Scoreboard:            []models.DocumentSchema{},
+		CurrentPage:           0,
+		NumOfPages:            1,
+		MessageForUser:        "",
+	}
 
-		  }
-	*/
-
-	if err := templates.TmpMain.Execute(w, nil); err != nil {
+  // gc.data vs nil - no difference
+	if err := templates.TmpMain.Execute(w, gc.data); err != nil {
 		panic(err)
 	}
 }
@@ -124,14 +122,11 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 		if err := templates.TmpGame.Execute(w, gc.data); err != nil {
 			panic(err)
 		}
-
 	} else {
 
 		if err := r.ParseForm(); err != nil {
 			fmt.Printf("ParseForm() error: %v", err)
 		}
-
-		// TODO: Get rid of the "double"  ifs for same thing.
 
 		// Check if the finish button has been clicked, if it was, we don't check the answer and the game stops.
 		if r.FormValue("isFinished") == "true" {
@@ -146,7 +141,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 			if r.FormValue("username") != "" && !gc.model.CheckIfUsernameAlreadyExists(r.FormValue("username")) {
 				gc.data.CurrentPlayer = r.FormValue("username")
 			} else {
-				// Potential problem: We enter here every time we go to a next or previous page. This isn't a problem for now.
+				// Potential problem: We enter here every time we go to a next or previous table page. This isn't a problem for now.
 				fmt.Println("The username you entered isn't valid. Please enter another one.")
 				gc.data.IsUsernameValid = "false"
 			}
@@ -193,7 +188,6 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 				// Update the ranks of other players that are below the current player.
 				gc.model.UpdateOtherRanks(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
 
-				// TODO: Change this to bool
 				gc.data.DisplayScoreboard = "true"
 
 				gc.data.Scoreboard, gc.data.NumOfPages = gc.model.GetScoreboard(gc.data.CurrentPage)
@@ -224,5 +218,3 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-
-// TODO: Weird things happen if the page goes to the finished screen and the user goes back by using browser back-arrow
