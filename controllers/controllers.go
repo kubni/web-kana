@@ -1,5 +1,6 @@
 /* TODO:
-2) Play again button
+4) Separate endpoints (/game, /game/finish, /game/scoreboard...)
+5) CSS (divs, paddings, margins, layout of the page...)
 */
 
 package controllers
@@ -35,6 +36,7 @@ type TemplateData struct {
 	CurrentPage           int
 	NumOfPages            int
 	MessageForUser        string
+	IsPlayAgainTrue       string
 }
 
 type GameController struct {
@@ -47,13 +49,12 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 	var gc GameController
 
 	gc.data = TemplateData{
-		PageTitle:     "",
-		Character:     "",
-		ResultMessage: "",
-		CorrectAnswer: "",
-		IsFinished:    "false",
-		CurrentPlayer: "",
-		// CurrentPlayerObjectID: nil,
+		PageTitle:             "",
+		Character:             "",
+		ResultMessage:         "",
+		CorrectAnswer:         "",
+		IsFinished:            "false",
+		CurrentPlayer:         "",
 		CurrentPlayerStringID: "",
 		CurrentPlayerRank:     0,
 		CurrentPlayerScore:    0,
@@ -63,6 +64,7 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 		CurrentPage:           0,
 		NumOfPages:            1,
 		MessageForUser:        "",
+		IsPlayAgainTrue:       "false",
 	}
 
 	gc.model = models.NewModel(client, "testdb", "scoreboard3")
@@ -74,27 +76,7 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 
 // Main page (selection) controller
 func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
-	// FIXME: Why doesn't this reset the data after we go back to main page with the button?
-	gc.data = TemplateData{
-		PageTitle:     "",
-		Character:     "",
-		ResultMessage: "",
-		CorrectAnswer: "",
-		IsFinished:    "false",
-		CurrentPlayer: "",
-		// CurrentPlayerObjectID: nil,
-		CurrentPlayerStringID: "",
-		CurrentPlayerRank:     0,
-		CurrentPlayerScore:    0,
-		IsUsernameValid:       "false",
-		DisplayScoreboard:     "false",
-		Scoreboard:            []models.DocumentSchema{},
-		CurrentPage:           0,
-		NumOfPages:            1,
-		MessageForUser:        "",
-	}
-
-  // gc.data vs nil - no difference
+	// gc.data vs nil - no difference
 	if err := templates.TmpMain.Execute(w, gc.data); err != nil {
 		panic(err)
 	}
@@ -103,6 +85,7 @@ func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
 // Game page (playground) controller
 func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
+		// Parse the GET form:
 		if err := r.ParseForm(); err != nil {
 			fmt.Printf("ParseForm() error: %v", err)
 		}
@@ -122,10 +105,53 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 		if err := templates.TmpGame.Execute(w, gc.data); err != nil {
 			panic(err)
 		}
-	} else {
+	} else { // POST
 
 		if err := r.ParseForm(); err != nil {
 			fmt.Printf("ParseForm() error: %v", err)
+		}
+
+		isPlayAgainTrue := r.FormValue("isPlayAgainTrue")
+		if isPlayAgainTrue == "true" {
+			// TODO: Find a prettier way. The problem: We want to reset everything EXCEPT the PageTitle.
+			// If we just comment that, it will still get the default value for string which is "" since we are creating a new
+			// TemplateData "object"
+
+			// gc.data = TemplateData{
+			// 	//PageTitle:             "", // We don't want to reset the page title
+			// 	Character:             "",
+			// 	ResultMessage:         "",
+			// 	CorrectAnswer:         "",
+			// 	IsFinished:            "false",
+			// 	CurrentPlayer:         "",
+			// 	CurrentPlayerStringID: "",
+			// 	CurrentPlayerRank:     0,
+			// 	CurrentPlayerScore:    0,
+			// 	IsUsernameValid:       "false",
+			// 	DisplayScoreboard:     "false",
+			// 	Scoreboard:            []models.DocumentSchema{},
+			// 	CurrentPage:           0,
+			// 	NumOfPages:            1,
+			// 	MessageForUser:        "",
+			// 	IsPlayAgainTrue:       "true", // We set the IsPlayAgainTrue to true here
+			// }
+
+			// TODO: Find a better way. This way is awful, but we can keep the PageTitle
+			gc.data.Character = ""
+			gc.data.ResultMessage = ""
+			gc.data.CorrectAnswer = ""
+			gc.data.IsFinished = "false"
+			gc.data.CurrentPlayer = ""
+			gc.data.CurrentPlayerStringID = ""
+			gc.data.CurrentPlayerRank = 0
+			gc.data.CurrentPlayerScore = 0
+			gc.data.IsUsernameValid = "false"
+			gc.data.DisplayScoreboard = "false"
+			gc.data.Scoreboard = []models.DocumentSchema{}
+			gc.data.CurrentPage = 0
+			gc.data.NumOfPages = 1
+			gc.data.MessageForUser = ""
+			gc.data.IsPlayAgainTrue = "true" // We set the IsPlayAgainTrue to true here
 		}
 
 		// Check if the finish button has been clicked, if it was, we don't check the answer and the game stops.
@@ -148,7 +174,6 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 
 			// gc.data.CurrentPlayer will not be empty if the entered username is valid (passes the check above)
 			if gc.data.CurrentPlayer != "" {
-				// TODO: Is this field even needed?
 				gc.data.IsUsernameValid = "true"
 
 				if r.FormValue("isNextPageClicked") == "true" {
@@ -189,27 +214,40 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 				gc.model.UpdateOtherRanks(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
 
 				gc.data.DisplayScoreboard = "true"
-
 				gc.data.Scoreboard, gc.data.NumOfPages = gc.model.GetScoreboard(gc.data.CurrentPage)
 			}
 		} else {
-			// Parse the answer
-			answer := r.FormValue("answer")
 
-			// Check if the answer is correct
-			if kana_logic.Check_answer(answer, gc.data.Character) {
-				gc.data.ResultMessage = "Correct answer!"
-				gc.data.CorrectAnswer = ""
-				gc.data.CurrentPlayerScore++
-			} else {
-				gc.data.CorrectAnswer = tables.Romaji_table[gc.data.Character]
-				gc.data.ResultMessage = fmt.Sprintf("Wrong, the right answer was ")
+			// TODO: Write this better
+			/*
+			   First time that we arrive here after the Play Again button,
+			   we don't want the program to compare answer and gc.data.Character because
+			   those values got reset to "" so it will be true always and increment the score.
 
-				if gc.data.CurrentPlayerScore > 0 {
-					gc.data.CurrentPlayerScore--
+			   We do the answer checking only if IsPlayAgain is false, and if it isn't we set it in this if's else.
+			*/
+			if gc.data.IsPlayAgainTrue == "false" {
+				// Parse the answer
+				answer := r.FormValue("answer")
+
+				// Check if the answer is correct
+				if kana_logic.Check_answer(answer, gc.data.Character) {
+					gc.data.ResultMessage = "Correct answer!"
+					gc.data.CorrectAnswer = ""
+					gc.data.CurrentPlayerScore++
+				} else {
+					gc.data.CorrectAnswer = tables.Romaji_table[gc.data.Character]
+					gc.data.ResultMessage = fmt.Sprintf("Wrong, the right answer was ")
+
+					if gc.data.CurrentPlayerScore > 0 {
+						gc.data.CurrentPlayerScore--
+					}
 				}
+			} else {
+				gc.data.IsPlayAgainTrue = "false"
 			}
 
+			// TODO: Remember why you put this here and why it doesn't work if its above the answer = ... line
 			gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable)
 
 		}

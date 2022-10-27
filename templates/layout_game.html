@@ -24,8 +24,10 @@
 {{ define "template-finish" }}
   <h2>The game is finished. Your total score is: <span class="total-score">{{.CurrentPlayerScore}}</span></h2>
 
-  <!-- TODO: This properly goes back to the main page, but we need to somehow reset all the data that was saved during the previous session so that we can start over-->
-  <input class="go-back-button" type=button onclick="parent.location='/'" value='Go back to the Main Page'>
+  <form id="playAgainForm" action="/game" method="POST">
+    <input type="text" value="true" name="isPlayAgainTrue" hidden="hidden">
+    <input class="go-back-button" type="submit" value="Play Again"> 
+  </form>
 
   <h2>If you want to save your result, type in your username:</h2> 
 <form id="usernameForm" action="/game" method="POST"> 
@@ -109,7 +111,7 @@
       {{ else }}
         <!-- We enter here after the username is provided -->
           {{ if eq .IsUsernameValid "true" }}
-            <p>Username is valid!!!! </p>
+            <!-- <p>Username is valid!!!! </p> -->
             {{ template "template-scoreboard" . }}
           {{ else }}
             <!-- FIXME: For some reason, we never enter here, even though we can enter the if above. -->
