@@ -50,7 +50,7 @@
     <tbody>
       {{ range $index, $element := .Scoreboard }}
       {{ if eq $element.ID $.CurrentPlayerStringID }} 
-      <!-- $.CurrentPlayerID because range goes into the Scoreboard and we use $ like .. in terminal to go up one level-->
+    <!-- $.CurrentPlayerID because range goes into the Scoreboard and we use $ like ".." in linux terminal to go up one level --> 
             <tr class="active-row">
               <td>{{ $element.Rank }}</td>
               <td>{{ $element.Username }}</td>
@@ -85,6 +85,9 @@
     {{ end }} 
     <h3>Page {{ inc .CurrentPage }}</h3>
 {{ end }}
+
+
+
 
 <html lang="en">
   <head>

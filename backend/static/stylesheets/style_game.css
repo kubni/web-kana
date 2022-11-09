@@ -16,9 +16,6 @@ p {
   margin: 0;
 }
 
-
-
-
 /* Typography */
 .target-char {
   color: var(--clr-secondary);
@@ -49,7 +46,8 @@ input {
   background-color: #e6e6e6;
 }
 
-input:not(.answerInput):hover, input:focus {
+input:not(.answerInput):hover,
+input:focus {
   outline: 2px solid var(--clr-secondary);
 }
 
@@ -117,8 +115,6 @@ tbody tr.active-row {
   display: flex;
   gap: 10px;
 }
-
-
 
 /* Utilities */ /* TODO: Move target-char rule from typography to utilities?  */
 .correct-answer,

@@ -11,14 +11,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// TODO:
-/*
-  1.Input to stay focused,
-  3. Some kind of an update system
-    // How to prevent someone with the same username from changing the other's score?
-    // Maybe by using their unique ID as a pseudo-password?
-*/
-
 func main() {
 	client, ctx, cancel := dbLogic.InitializeDatabaseConnection()
 	defer dbLogic.Close(client, ctx, cancel)
