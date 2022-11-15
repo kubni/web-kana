@@ -1,8 +1,3 @@
-/* TODO:
-4) Separate endpoints (/game, /game/finish, /game/scoreboard...)
-5) CSS (divs, paddings, margins, layout of the page...)
-*/
-
 package controllers
 
 import (
@@ -20,6 +15,7 @@ import (
 )
 
 type TemplateData struct {
+	ChosenAlphabet        string
 	PageTitle             string
 	Character             string
 	ResultMessage         string
@@ -49,6 +45,7 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 	var gc GameController
 
 	gc.data = TemplateData{
+		ChosenAlphabet:        "",
 		PageTitle:             "",
 		Character:             "",
 		ResultMessage:         "",
@@ -84,175 +81,138 @@ func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
 
 // Game page (playground) controller
 func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		// Parse the GET form:
-		if err := r.ParseForm(); err != nil {
-			fmt.Printf("ParseForm() error: %v", err)
-		}
+	if err := r.ParseForm(); err != nil {
+		fmt.Printf("ParseForm() error: %v", err)
+	}
 
-		// TODO: Move this into a separate function
-		chosenAlphabet := r.FormValue("chosen-alphabet")
-		if chosenAlphabet == "Hiragana" {
-			gc.chosenAlphabetTable = tables.Hiragana_table
-			gc.data.PageTitle = "ひらがな"
+	chosenAlphabet := r.FormValue("chosen-alphabet")
+	if chosenAlphabet == "Hiragana" {
+		gc.chosenAlphabetTable = tables.Hiragana_table
+		gc.data.ChosenAlphabet = "hiragana"
+	}
+	if chosenAlphabet == "Katakana" {
+		gc.chosenAlphabetTable = tables.Katakana_table
+		gc.data.ChosenAlphabet = "katakana"
+	}
+
+	if gc.data.ChosenAlphabet == "hiragana" {
+		gc.data.PageTitle = "ひらがな"
+	} else {
+		gc.data.PageTitle = "カタカナ"
+	}
+
+	isPlayAgainTrue := r.FormValue("isPlayAgainTrue")
+	if isPlayAgainTrue == "true" {
+		gc.data.ChosenAlphabet = ""
+		gc.data.Character = ""
+		gc.data.ResultMessage = ""
+		gc.data.CorrectAnswer = ""
+		gc.data.IsFinished = "false"
+		gc.data.CurrentPlayer = ""
+		gc.data.CurrentPlayerStringID = ""
+		gc.data.CurrentPlayerRank = 0
+		gc.data.CurrentPlayerScore = 0
+		gc.data.IsUsernameValid = "false"
+		gc.data.DisplayScoreboard = "false"
+		gc.data.Scoreboard = []models.DocumentSchema{}
+		gc.data.CurrentPage = 0
+		gc.data.NumOfPages = 1
+		gc.data.MessageForUser = ""
+		gc.data.IsPlayAgainTrue = "true" // We set the IsPlayAgainTrue to true here
+	}
+
+	// Check if the finish button has been clicked, if it was, we don't check the answer and the game stops.
+	if r.FormValue("isFinished") == "true" {
+		gc.data.IsFinished = "true"
+	}
+
+	if gc.data.IsFinished == "true" {
+		if r.FormValue("username") != "" && !gc.model.CheckIfUsernameAlreadyExists(r.FormValue("username")) {
+			gc.data.CurrentPlayer = r.FormValue("username")
 		} else {
-			gc.chosenAlphabetTable = tables.Katakana_table
-			gc.data.PageTitle = "カタカナ"
-		}
-
-		gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable)
-
-		if err := templates.TmpGame.Execute(w, gc.data); err != nil {
-			panic(err)
-		}
-	} else { // POST
-
-		if err := r.ParseForm(); err != nil {
-			fmt.Printf("ParseForm() error: %v", err)
-		}
-
-		isPlayAgainTrue := r.FormValue("isPlayAgainTrue")
-		if isPlayAgainTrue == "true" {
-			// TODO: Find a prettier way. The problem: We want to reset everything EXCEPT the PageTitle.
-			// If we just comment that, it will still get the default value for string which is "" since we are creating a new
-			// TemplateData "object"
-
-			// gc.data = TemplateData{
-			// 	//PageTitle:             "", // We don't want to reset the page title
-			// 	Character:             "",
-			// 	ResultMessage:         "",
-			// 	CorrectAnswer:         "",
-			// 	IsFinished:            "false",
-			// 	CurrentPlayer:         "",
-			// 	CurrentPlayerStringID: "",
-			// 	CurrentPlayerRank:     0,
-			// 	CurrentPlayerScore:    0,
-			// 	IsUsernameValid:       "false",
-			// 	DisplayScoreboard:     "false",
-			// 	Scoreboard:            []models.DocumentSchema{},
-			// 	CurrentPage:           0,
-			// 	NumOfPages:            1,
-			// 	MessageForUser:        "",
-			// 	IsPlayAgainTrue:       "true", // We set the IsPlayAgainTrue to true here
-			// }
-
-			// TODO: Find a better way. This way is awful, but we can keep the PageTitle
-			gc.data.Character = ""
-			gc.data.ResultMessage = ""
-			gc.data.CorrectAnswer = ""
-			gc.data.IsFinished = "false"
-			gc.data.CurrentPlayer = ""
-			gc.data.CurrentPlayerStringID = ""
-			gc.data.CurrentPlayerRank = 0
-			gc.data.CurrentPlayerScore = 0
+			// Potential problem: We enter here every time we go to a next or previous table page. This isn't a problem for now.
+			fmt.Println("The username you entered isn't valid. Please enter another one.")
 			gc.data.IsUsernameValid = "false"
-			gc.data.DisplayScoreboard = "false"
-			gc.data.Scoreboard = []models.DocumentSchema{}
-			gc.data.CurrentPage = 0
-			gc.data.NumOfPages = 1
-			gc.data.MessageForUser = ""
-			gc.data.IsPlayAgainTrue = "true" // We set the IsPlayAgainTrue to true here
 		}
 
-		// Check if the finish button has been clicked, if it was, we don't check the answer and the game stops.
-		if r.FormValue("isFinished") == "true" {
-			gc.data.IsFinished = "true"
-		}
+		// gc.data.CurrentPlayer will not be empty if the entered username is valid (passes the check above)
+		if gc.data.CurrentPlayer != "" {
+			gc.data.IsUsernameValid = "true"
 
-		// TODO: Is this okay? r.FormValue("finish-value") doesn't have the TRUE value if we don't click on the Finish button,
-		// so if we check with that, we will only pass the condition once.
-		// Therefore, this is needed because IsFinished will always be true once set because its in a global struct variable
-		if gc.data.IsFinished == "true" {
-			// Parse the username and check if it already exists in the database:
-			if r.FormValue("username") != "" && !gc.model.CheckIfUsernameAlreadyExists(r.FormValue("username")) {
-				gc.data.CurrentPlayer = r.FormValue("username")
-			} else {
-				// Potential problem: We enter here every time we go to a next or previous table page. This isn't a problem for now.
-				fmt.Println("The username you entered isn't valid. Please enter another one.")
-				gc.data.IsUsernameValid = "false"
-			}
-
-			// gc.data.CurrentPlayer will not be empty if the entered username is valid (passes the check above)
-			if gc.data.CurrentPlayer != "" {
-				gc.data.IsUsernameValid = "true"
-
-				if r.FormValue("isNextPageClicked") == "true" {
-					gc.data.CurrentPage++
-				} else if r.FormValue("isPreviousPageClicked") == "true" {
-					gc.data.CurrentPage--
-				} else { // We don't want to insert same user into the db each time we press "Next Page" button
-					var document interface{}
-					// As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
-					document = bson.M{
-						"ID":       gc.data.CurrentPlayerStringID, //  At this point this is empty, but we populate it in the model with `bson` notation
-						"Username": gc.data.CurrentPlayer,
-						"Score":    gc.data.CurrentPlayerScore,
-						"Rank":     gc.data.CurrentPlayerRank,
-					}
-
-					// Add the player to the database
-					fmt.Println("Document: ", document)
-					fmt.Println("Inserting the user into the db...")
-
-					insertOneResult, err := gc.model.InsertOne(document)
-					if err != nil {
-						panic(err)
-					} else {
-						fmt.Println("Insert result: ", insertOneResult)
-
-						// Decode the insertOneResult into a string
-						if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
-							gc.data.CurrentPlayerObjectID = id
-							gc.data.CurrentPlayerStringID = id.Hex()
-						}
-					}
+			if r.FormValue("isNextPageClicked") == "true" {
+				gc.data.CurrentPage++
+			} else if r.FormValue("isPreviousPageClicked") == "true" {
+				gc.data.CurrentPage--
+			} else { // We don't want to insert same user into the db each time we press "Next Page" button
+				var document interface{}
+				// As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
+				document = bson.M{
+					"ID":       gc.data.CurrentPlayerStringID, //  At this point this is empty, but we populate it in the model with `bson` notation
+					"Username": gc.data.CurrentPlayer,
+					"Score":    gc.data.CurrentPlayerScore,
+					"Rank":     gc.data.CurrentPlayerRank,
 				}
-				// Get and set the player rank
-				gc.data.CurrentPlayerRank = gc.model.GetAndSetPlayerRank(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
 
-				// Update the ranks of other players that are below the current player.
-				gc.model.UpdateOtherRanks(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
+				// Add the player to the database
+				fmt.Println("Document: ", document)
+				fmt.Println("Inserting the user into the db...")
 
-				gc.data.DisplayScoreboard = "true"
-				gc.data.Scoreboard, gc.data.NumOfPages = gc.model.GetScoreboard(gc.data.CurrentPage)
-			}
-		} else {
-
-			// TODO: Write this better
-			/*
-			   First time that we arrive here after the Play Again button,
-			   we don't want the program to compare answer and gc.data.Character because
-			   those values got reset to "" so it will be true always and increment the score.
-
-			   We do the answer checking only if IsPlayAgain is false, and if it isn't we set it in this if's else.
-			*/
-			if gc.data.IsPlayAgainTrue == "false" {
-				// Parse the answer
-				answer := r.FormValue("answer")
-
-				// Check if the answer is correct
-				if kana_logic.Check_answer(answer, gc.data.Character) {
-					gc.data.ResultMessage = "Correct answer!"
-					gc.data.CorrectAnswer = ""
-					gc.data.CurrentPlayerScore++
+				insertOneResult, err := gc.model.InsertOne(document)
+				if err != nil {
+					panic(err)
 				} else {
-					gc.data.CorrectAnswer = tables.Romaji_table[gc.data.Character]
-					gc.data.ResultMessage = fmt.Sprintf("Wrong, the right answer was ")
+					fmt.Println("Insert result: ", insertOneResult)
 
-					if gc.data.CurrentPlayerScore > 0 {
-						gc.data.CurrentPlayerScore--
+					// Decode the insertOneResult into a string
+					if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
+						gc.data.CurrentPlayerObjectID = id
+						gc.data.CurrentPlayerStringID = id.Hex()
 					}
 				}
-			} else {
-				gc.data.IsPlayAgainTrue = "false"
 			}
+			// Get and set the player rank
+			gc.data.CurrentPlayerRank = gc.model.GetAndSetPlayerRank(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
 
-			// TODO: Remember why you put this here and why it doesn't work if its above the answer = ... line
-			gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable)
+			// Update the ranks of other players that are below the current player.
+			gc.model.UpdateOtherRanks(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
 
+			gc.data.DisplayScoreboard = "true"
+			gc.data.Scoreboard, gc.data.NumOfPages = gc.model.GetScoreboard(gc.data.CurrentPage)
 		}
-		if err := templates.TmpGame.Execute(w, gc.data); err != nil {
-			panic(err)
-		}
+	} else {
+		if gc.data.IsPlayAgainTrue == "false" {
+			// Parse the answer
+			answer := r.FormValue("answer")
+
+      /* 
+         If the character that we need to guess is empty, skip the check, 
+         or in other words, if its not empty, do the check:
+      */
+      // This happens the first time we come here only!
+      if gc.data.Character != "" { 
+        // Check if the answer is correct
+        if kana_logic.Check_answer(answer, gc.data.Character) {
+          gc.data.ResultMessage = "Correct answer!"
+          gc.data.CorrectAnswer = ""
+          gc.data.CurrentPlayerScore++
+        } else {
+          gc.data.CorrectAnswer = tables.Romaji_table[gc.data.Character]
+          gc.data.ResultMessage = fmt.Sprintf("Wrong, the right answer was ")
+
+          if gc.data.CurrentPlayerScore > 0 {
+            gc.data.CurrentPlayerScore--
+          }
+        }
+      } else {
+        gc.data.IsPlayAgainTrue = "false"
+      }
+    }
+
+
+    gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable)
+
+	}
+	if err := templates.TmpGame.Execute(w, gc.data); err != nil {
+		panic(err)
 	}
 }
