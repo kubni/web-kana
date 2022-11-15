@@ -9,12 +9,24 @@ export default function Form() {
 
   console.log(formData)
 
-
   function handleSubmit(event) {
     event.preventDefault()
-    console.log("Zdravo iz handlesubmita")
-    console.log("formData u handleSubmitu", formData)
-    // TODO: axios
+
+    // Send this to /game endpoint so the backend can process the data.
+    //   FIXME: GET request should not have the body.
+    /* 
+      * The problem is that the backend expects  chosenAlphabet to come with a GET request
+      * I could send the post request and read the FormValue("chosen-alphabet") there,
+      * but the problem is that moving Play_all_gamemode into the else block (which is what gets 
+      * triggered on POST request) breaks the game 
+    */ 
+    fetch("http://localhost:8000/game", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData) 
+    })
   } 
 
 
