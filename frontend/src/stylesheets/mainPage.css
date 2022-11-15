@@ -9,8 +9,28 @@
   box-sizing: border-box;
 }
 
-body {
-  background-image: url("./images/sakura_branch.jpg");
+/* #root { */
+/*   background-image: url("../images/sakura_branch.jpg"); */
+/*   background-color: #333; */
+/*   background-blend-mode: multiply; */
+/*   background-position: right top; */
+/*   background-repeat: no-repeat; */
+/*   z-index: -1; */
+/*   min-height: 100vh; */
+/*   display: flex; */
+/*   justify-content: center; */
+/* } */
+
+body,
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+
+.mainPage {
+  background-image: url("../images/sakura_branch.jpg");
   background-color: #333;
   background-blend-mode: multiply;
   background-position: right top;
@@ -20,12 +40,6 @@ body {
   display: flex;
   justify-content: center;
 }
-h1,
-h2,
-p {
-  margin: 0;
-}
-
 .container {
   display: flex;
   align-items: center;
@@ -36,7 +50,9 @@ p {
   text-shadow: 1px 1px var(--clr-primary);
   animation: drop 1s ease forwards;
   min-height: 100vh;
-}
+
+
+  }
 
 header {
   font-style: oblique;
