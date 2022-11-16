@@ -1,4 +1,5 @@
 import React, {useState} from "react"
+import {Link} from "react-router-dom"
 
 export default function Form() {
   const [formData, setFormData] = useState(
@@ -23,7 +24,8 @@ export default function Form() {
     fetch("http://localhost:8000/game", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
+        // "Content-Type": "application/json",
       },
       body: JSON.stringify(formData) 
     })
@@ -41,13 +43,12 @@ export default function Form() {
 
   }
 
-
   return (
     <>
     <form id="testId" onSubmit={handleSubmit}> 
       <div className="buttons">
-        <button className="hiragana-button" onClick={handleClick}>Hiragana</button>
-        <button className="katakana-button" onClick={handleClick}>Katakana</button>
+        <Link to="/game" className="hiragana-button" onClick={handleClick}>Hiragana</Link>
+        <Link to="/game" className="katakana-button" onClick={handleClick}>Katakana</Link>
       </div>
     </form>
     </>

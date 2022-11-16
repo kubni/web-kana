@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route} from "react-router-dom";
 
-
 import MainPage from "./MainPage"
 import GamePage from "./GamePage"
 
@@ -19,10 +18,6 @@ export default function App() {
         <Route path="/game" element={
           <GamePage 
            pageTitle={pageTitle}
-           
-
-
-
           />}
         />
       </Routes>

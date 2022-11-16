@@ -81,9 +81,25 @@ func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
 
 // Game page (playground) controller
 func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
+  fmt.Println("We are in the Playground!")
+ 
+
+  /*
+    For other HTTP methods, or when the Content-Type is not
+    application/x-www-form-urlencoded, the request Body is not read, and
+    r.PostForm is initialized to a non nil, empty value.
+
+  TODO: Does this mean we have to specify content-type application/x-www-form-urlencoded
+        instead of application/json in frontend/MainReactForm
+*/	
+
+if err := r.ParseForm(); err != nil {
 		fmt.Printf("ParseForm() error: %v", err)
 	}
+
+  testReactForm := r.FormValue("chosenAlphabet")
+  fmt.Println("Test react form: ", testReactForm)
+
 
 	chosenAlphabet := r.FormValue("chosen-alphabet")
 	if chosenAlphabet == "Hiragana" {

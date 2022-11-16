@@ -28,7 +28,9 @@ p {
   margin: 0;
 }
 
-
+a {
+  text-decoration: none;
+}
 .mainPage {
   background-image: url("../images/sakura_branch.jpg");
   background-color: #333;
@@ -88,6 +90,8 @@ header {
   box-shadow: 5px 5px #888888;
 }
 
-button:hover {
+.hiragana-button:hover, .katakana-button:hover {
   background-color: #f0c8d6;
 }
+
+

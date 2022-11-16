@@ -11,7 +11,7 @@ import (
 
 	"web_kana_v1/connMonitor"
 	"web_kana_v1/dbLogic"
-	// "web_kana_v1/routes"
+	"web_kana_v1/routes"
 
 
 	"github.com/gorilla/mux"
@@ -48,6 +48,7 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_, err = os.Stat(path)
 	if os.IsNotExist(err) {
 		// file does not exist, serve index.html
+    fmt.Println("ServeHTTP: File doesn't exist, serving index.html...")
 		http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexPath))
 		return
 	} else if err != nil {
@@ -77,11 +78,11 @@ func main() {
   spa := spaHandler{staticPath: "../frontend/build", indexPath: "index.html"}
 	r.PathPrefix("/").Handler(spa) 
 
-	// For serving the static files
-	  //r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
-
+  
+	// For serving the static files (OLD WAY)
+/*   r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../frontend/build/static")))) */
 	// Initalize the routes
-	  //routes.InitRoutes(r, client, ctx)
+	routes.InitRoutes(r, client, ctx)
 
 	// Configure the web server
 	var cw connMonitor.ConnectionWatcher
