@@ -13,7 +13,6 @@ import (
 	"web_kana_v1/dbLogic"
 	"web_kana_v1/routes"
 
-
 	"github.com/gorilla/mux"
 )
 
@@ -76,11 +75,46 @@ func main() {
 	})
 
   spa := spaHandler{staticPath: "../frontend/build", indexPath: "index.html"}
-	r.PathPrefix("/").Handler(spa) 
+
+
+ 
+  // We need something like "/*" so we can serve index.html (which React dynamically changes?) 
+  // on all endpoints
+
+  /* Actually, from Mux documentation we can see that using PathPrefix("/") actually makes it so 
+     that Handler(spa) gets called on /*    :
+    
+    "Note that the path provided to PathPrefix() represents a "wildcard":
+     calling PathPrefix("/static/").Handler(...) means that the handler will 
+     be passed any request that matches "/static/*". 
+     This makes it easy to serve static files with mux:"
+  */
+
+   // FIXME: Problem:                                                                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
+   /* 
+      Need to figure out how to make Playground controller respond to /game,
+      since r.HandleFunc("/game", controllers.NewGameController(ctx, client).Playground)
+      in routes.go isn't working
+    */
+
+
+
+
+  // Stupid idea: Golang only for Mongodb communication?
+  // That would require gameplay rewrite in javascript...
+
+
+
+
+
+
+
+  r.PathPrefix("/").Handler(spa) 
 
   
 	// For serving the static files (OLD WAY)
 /*   r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../frontend/build/static")))) */
+
 	// Initalize the routes
 	routes.InitRoutes(r, client, ctx)
 

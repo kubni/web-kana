@@ -72,12 +72,12 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 }
 
 // Main page (selection) controller
-func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
-	// gc.data vs nil - no difference
-	if err := templates.TmpMain.Execute(w, gc.data); err != nil {
-		panic(err)
-	}
-}
+// func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
+// 	// gc.data vs nil - no difference
+// 	if err := templates.TmpMain.Execute(w, gc.data); err != nil {
+// 		panic(err)
+// 	}
+// }
 
 // Game page (playground) controller
 func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {

@@ -10,7 +10,10 @@ export default function App() {
 
 
 
-  // TODO: path="/" vs index?
+  /* TODO:
+    * path="/" vs index?
+    * GamePage should have states passed as props  (maybe an object of objects (corresponding to the component))!! 
+  */
   return (
     <BrowserRouter>
       <Routes>
@@ -18,6 +21,9 @@ export default function App() {
         <Route path="/game" element={
           <GamePage 
            pageTitle={pageTitle}
+           isFinished={true}
+           isDisplayScoreboard={true}
+           isUsernameValid={true}
           />}
         />
       </Routes>

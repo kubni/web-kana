@@ -8,8 +8,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+
+
+
+
+
+
 func InitRoutes(r *mux.Router, client *mongo.Client, ctx context.Context) {
-	r.HandleFunc("/", controllers.NewGameController(ctx, client).Selection).Methods("GET")
-	r.HandleFunc("/game", controllers.NewGameController(ctx, client).Playground)
-	//r.HandleFunc("/game/hiragana", controllers.NewGameController(ctx, client).Playground)
+	// r.HandleFunc("/", controllers.NewGameController(ctx, client).Selection).Methods("GET")
+  // r.HandleFunc("/game", controllers.NewGameController(ctx, client).Playground)
+  r.HandleFunc("/game", controllers.NewGameController(ctx, client).Playground)
 }
