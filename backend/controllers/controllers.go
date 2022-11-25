@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+  "encoding/json"
 	"web_kana_v1/kana/kana_logic"
 	"web_kana_v1/kana/tables"
 	"web_kana_v1/models"
@@ -12,7 +13,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-)
+	/*  	"github.com/gorilla/schema" */)
+
+// var decoder = schema.NewDecoder()
+
+type AlphabetData struct {
+  Name string
+}
 
 type TemplateData struct {
 	ChosenAlphabet        string
@@ -71,19 +78,19 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 	return &gc
 }
 
-// Main page (selection) controller
-// func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
-// 	// gc.data vs nil - no difference
-// 	if err := templates.TmpMain.Execute(w, gc.data); err != nil {
-// 		panic(err)
-// 	}
-// }
+//Main page (selection) controller
+func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
+	// gc.data vs nil - no difference
+  fmt.Println("WE ARE IN SELECTION")	
+}
+
+
+
+
 
 // Game page (playground) controller
 func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
   fmt.Println("We are in the Playground!")
- 
-
   /*
     For other HTTP methods, or when the Content-Type is not
     application/x-www-form-urlencoded, the request Body is not read, and
@@ -93,13 +100,20 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
         instead of application/json in frontend/MainReactForm
 */	
 
-if err := r.ParseForm(); err != nil {
-		fmt.Printf("ParseForm() error: %v", err)
-	}
+
+
+// if err := r.ParseForm(); err != nil {
+// 		fmt.Printf("ParseForm() error: %v", err)
+// 	}
+
+  // var body interface {}
+  // if err := json.NewDecoder(r.Body).Decode()
+   
 
   testReactForm := r.FormValue("chosenAlphabet")
   fmt.Println("Test react form: ", testReactForm)
 
+  return
 
 	chosenAlphabet := r.FormValue("chosen-alphabet")
 	if chosenAlphabet == "Hiragana" {

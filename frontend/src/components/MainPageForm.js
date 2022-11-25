@@ -1,63 +1,42 @@
-import React, {useState, useEffect} from "react"
+import React, {useState, useEffect, useRef} from "react"
 import {Link} from "react-router-dom"
 
 export default function Form() {
-  const [formData, setFormData] = useState(
-    {
-      chosenAlphabet: ""
-    }
-  )
-
-  console.log(formData)
+  const ref = useRef()
 
   function handleSubmit(event) {
     event.preventDefault()
+    console.log("Nesto")
+    console.log(event.submitted)
+    console.log(event.nativeEvent.submitter.className)
+    const className = event.nativeEvent.submitter.className 
+    const chosenAlphabet = className === "hiragana-button" ? "hiragana" : "katakana"
+       
 
-    // Send this to /game endpoint so the backend can process the data.
-
-    // FIXME: useEffect doesn't work !!!!!!!!!!!!!!!!!!!
-    // useEffect(function () {
-    //   fetch("http://localhost:8000/game", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/x-www-form-urlencoded",
-    //       // "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(formData) 
-    //   })
-    // }, [])
-    //
-    //
     fetch("http://localhost:8000/game", {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        // "Content-Type": "application/json",
+        "Content-Type": "application/json" 
       },
-      body: JSON.stringify(formData) 
+      body: JSON.stringify({chosenAlphabet})
     })
 
+    console.log(ref.current)
+    ref.current.click()
   }
-  
 
 
   function handleClick(event) {
-    const {className} = event.target
-    console.log(event)
-    setFormData(() => {
-      return {
-        chosenAlphabet: className === "hiragana-button" ? "hiragana" : "katakana"
-      } 
-    })
-
-  }
+    event.preventDefault()
+      }
 
   return (
     <>
     <form id="testId" onSubmit={handleSubmit}> 
       <div className="buttons">
-        <Link to="/game" className="hiragana-button" onClick={handleClick}>Hiragana</Link>
-        <Link to="/game" className="katakana-button" onClick={handleClick}>Katakana</Link>
+        <button className="hiragana-button">Hiragana</button>
+        <button className="katakana-button">Katakana</button>
+        <Link to="/game" ref={ref} hidden></Link>
       </div>
     </form>
     </>

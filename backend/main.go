@@ -8,10 +8,10 @@ import (
   "path/filepath"
   "encoding/json"
   "time"
-
+  "web_kana_v1/controllers"
 	"web_kana_v1/connMonitor"
 	"web_kana_v1/dbLogic"
-	"web_kana_v1/routes"
+	// "web_kana_v1/routes"
 	"github.com/gorilla/mux"
 )
 
@@ -73,6 +73,12 @@ func main() {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
 
+
+	r.HandleFunc("/game", controllers.NewGameController(ctx, client).Playground)
+
+
+
+
   spa := spaHandler{staticPath: "../frontend/build", indexPath: "index.html"}
 
 
@@ -98,12 +104,12 @@ func main() {
 
   
 	// For serving the static files (OLD WAY)
-/*   r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../frontend/build/static")))) */
+  // r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../frontend/build/static")))) 
 
   r.PathPrefix("/").Handler(spa) 
 
 	// Initalize the routes
-	routes.InitRoutes(r, client, ctx)
+	// routes.InitRoutes(r, client, ctx)
 
 	// Configure the web server
 	var cw connMonitor.ConnectionWatcher
