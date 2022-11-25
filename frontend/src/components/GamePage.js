@@ -1,17 +1,36 @@
+import React, {useState} from "react"
+
 
 import Playground from "./Playground.js"
 import FinishPage from "./FinishPage.js"
 import Scoreboard from "./Scoreboard.js"
+
+
+// import "../stylesheets/gamePage.css"
+
 
 export default function GamePage(props) {
   /*  Class names changes 
     * gamePage -> container 
   */
 
+  // We create this here because all of the children will need it
+
+  // TODO: Should i implement this here or just send a request to golang. We could have something
+  // like a getter for everything in golang for everything we need here?
+  const [currentPlayerScore, setCurrentPlayerScore] = useState(0)  
+
+
+  // const currentScoreFromGolang = getScoreFromBackend()
+  function incrementPlayerScore() {
+    // setCurrentPlayerScore(currentScoreFromGolang + 1)
+    setCurrentPlayerScore(currentPlayerScore + 1)
+  }
+
   return (
-      // TODO: Add the {} around props placeholders
-      // How do i send the character from backend to frontend?
-      // Probably as a response to the GET request, but again the problem is that our controller doesn't recognize the request 
+      // TODO: Add the {} around props placeholders when they get properly sent here
+      // Sending the data for props from backend to frontend?
+        // Probably as a response to the GET request, but again the problem is that our controller doesn't recognize the request 
 
       <div className="gamePage">  
        <header>
@@ -25,6 +44,7 @@ export default function GamePage(props) {
           <Scoreboard 
             scoreboard={[{ID:"1", rank:1, username:"test", score:"4"}, {ID:"2", rank:2, username:"test2", score:"2"}]}
             currentPlayerStringID="1"
+            currentPage={0}
           />
       } {/* else {if .isUsernameValid} */} 
       {  props.isFinished && props.isDisplayScoreboard && !props.isUsernameValid && 

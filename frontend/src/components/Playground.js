@@ -4,7 +4,8 @@
 // correct-answer -> correctAnswer 
 
 
-export default function Playground() {
+export default function Playground(props) {
+
   return (
     <div className="playground">
       <div className="targetChar">

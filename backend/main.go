@@ -12,7 +12,6 @@ import (
 	"web_kana_v1/connMonitor"
 	"web_kana_v1/dbLogic"
 	"web_kana_v1/routes"
-
 	"github.com/gorilla/mux"
 )
 
@@ -24,18 +23,17 @@ type spaHandler struct {
 
 func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     // get the absolute path to prevent directory traversal
-  // fmt.Println("h: ", h)
-  // fmt.Println("w: ", w)
-  // fmt.Println("r: ", r)
 	path, err := filepath.Abs(r.URL.Path)
 	if err != nil {
-        // if we failed to get the absolute path respond with a 400 bad request
-        // and stop
+      /*
+        If we failed to get the absolute path respond with a 400 bad request
+        and stop
+      */
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-  // prepend the path with the path to the static directory
+  // Prepend the path with the path to the static directory
 
   // For example we can get something like:
   // my_project/build/ + static/js/main.js 
@@ -43,17 +41,18 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
   path = filepath.Join(h.staticPath, path)
   fmt.Println("path after Join: ", path)
 
-  // check whether a file exists at the given path
+  // Check whether a file exists at the given path
 	_, err = os.Stat(path)
 	if os.IsNotExist(err) {
-		// file does not exist, serve index.html
+		// File does not exist, serve index.html
     fmt.Println("ServeHTTP: File doesn't exist, serving index.html...")
 		http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexPath))
 		return
 	} else if err != nil {
-      // if we got an error (that wasn't that the file doesn't exist) stating the
-      // file, return a 500 internal server error and stop
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+      /* If we got an error (that wasn't that the file doesn't exist) stating the
+         file, return a 500 internal server error and stop
+		  */
+    http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -90,30 +89,18 @@ func main() {
      This makes it easy to serve static files with mux:"
   */
 
-   // FIXME: Problem:                                                                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!11
+   // FIXME: Problem:                                                                   
    /* 
-      Need to figure out how to make Playground controller respond to /game,
+      Need to figure out how to make Playground controller respond to /game endpoint,
       since r.HandleFunc("/game", controllers.NewGameController(ctx, client).Playground)
-      in routes.go isn't working
+      in routes.go isn't getting called when React locally changes endpoint to /game
     */
-
-
-
-
-  // Stupid idea: Golang only for Mongodb communication?
-  // That would require gameplay rewrite in javascript...
-
-
-
-
-
-
-
-  r.PathPrefix("/").Handler(spa) 
 
   
 	// For serving the static files (OLD WAY)
 /*   r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../frontend/build/static")))) */
+
+  r.PathPrefix("/").Handler(spa) 
 
 	// Initalize the routes
 	routes.InitRoutes(r, client, ctx)

@@ -19,7 +19,7 @@ export default function Scoreboard(props) {
           {
             props.scoreboard.map(player => {
               return (
-                <tr className={player.ID === props.currentPlayerStringID ? "activeRow" : ""}>
+                <tr key={player.ID} className={player.ID === props.currentPlayerStringID ? "activeRow" : ""}>
                   <td>{player.rank}</td>
                   <td>{player.username}</td>
                   <td>{player.score}</td>
