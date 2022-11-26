@@ -9,5 +9,6 @@ import (
 )
 
 func InitRoutes(r *mux.Router, client *mongo.Client, ctx context.Context) {
+  r.HandleFunc("/game/alphabet", controllers.ParseAlphabet)
 	r.HandleFunc("/game", controllers.NewGameController(ctx, client).Playground)
 }

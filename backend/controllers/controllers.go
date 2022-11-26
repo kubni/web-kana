@@ -1,3 +1,8 @@
+/* TODO:
+  - Domain driven design -> Separate API functions and game logic in separate packages -
+*/
+
+
 package controllers
 
 import (
@@ -72,16 +77,27 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 	return &gc
 }
 
+// Should this have (gc *GameController) or not?
+// Probably not, and should go into API package in the future
+func ParseAlphabet(w http.ResponseWriter, r *http.Request) {
+ 	var alphabetData struct{
+    ChosenAlphabet string `json:"chosenAlphabet"`
+  }
+	if err := json.NewDecoder(r.Body).Decode(&alphabetData); err != nil {
+		log.Println(err)
+	}
+
+	fmt.Println("Chosen alphabet: ", alphabetData.ChosenAlphabet)
+}
+
+
+
+
 // Game page (playground) controller
 func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("We are in the Playground!")
 
-	var body interface{}
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		log.Println(err)
-	}
-
-	fmt.Println("Form request body in Json: ", body)
+  // 
 
 	// Placeholder return for now
 	return

@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import MainPage from "./MainPage";
-import GamePage from "./GamePage";
+import Home from "./pages/Home";
+import Game from "./pages/Game";
 
 export default function App() {
   // FIXME: This should dinamically change depending on the button that was clicked on main page.
@@ -11,18 +11,33 @@ export default function App() {
    * path="/" vs index?
    * GamePage should have states passed as props  (maybe an object of objects (corresponding to the component))!!
    */
+
+  const gameInfo = {
+    pageTitle: "",
+    isFinished: false,
+    isDisplayScoreboard: false,
+    isUsernameValid: false,
+  }
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<MainPage />} />
+        <Route path="/" element={<Home />} />
         <Route
-          path="/game"
+          path="/game/hiragana"
           element={
-            <GamePage
-              pageTitle={pageTitle}
-              isFinished={true}
-              isDisplayScoreboard={true}
-              isUsernameValid={true}
+            <Game
+              {...gameInfo}
+              pageTitle="hiragana"
+            />
+          }
+        />
+        <Route
+          path="/game/katakana"
+          element={
+            <Game
+              {...gameInfo}
+              pageTitle="katakana"
             />
           }
         />

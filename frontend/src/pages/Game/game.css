@@ -1,0 +1,123 @@
+:root {
+  --clr-primary: steelblue;
+  --clr-secondary: #f07575;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body,
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+/* Typography */
+.targetChar {
+  color: var(--clr-secondary);
+}
+
+/* Layout */
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--clr-primary);
+  gap: 4rem;
+}
+
+header {
+  margin-top: 5rem;
+  background-color: lightgrey;
+  width: 100%;
+  text-align: center;
+}
+
+input {
+  padding: 0.5rem;
+  border-radius: 10px;
+  box-shadow: 5px 5px rgba(0, 0, 0, 30%);
+  border: none;
+  background-color: #e6e6e6;
+}
+
+input:not(.answerInput):hover,
+input:focus {
+  outline: 2px solid var(--clr-secondary);
+}
+
+.resultInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.body.input {
+  color: steelblue;
+}
+
+.finishButton {
+  padding: 1rem 2rem;
+  color: var(--clr-primary);
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.goBackButton {
+  color: var(--clr-primary);
+  font-weight: bold;
+}
+
+table {
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 0.9em;
+  font-family: "Karla", sans-serif;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+thead tr {
+  background-color: var(--clr-primary);
+  color: #ffffff;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 12px 15px;
+}
+
+tbody tr {
+  border-bottom: thin solid #dddddd;
+}
+
+tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+tbody tr:last-of-type {
+  border-bottom: 2px solid var(--clr-primary);
+}
+
+tbody tr.active-row {
+  font-weight: bold;
+  background-color: var(--clr-secondary);
+  color: white;
+}
+
+.paginationButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.correctAnswer,
+.totalScore,
+.playerRank {
+  color: var(--clr-secondary);
+}

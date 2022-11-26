@@ -1,13 +1,8 @@
 import React, {useState} from "react"
 
-
-import Playground from "./Playground.js"
-import FinishPage from "./FinishPage.js"
-import Scoreboard from "./Scoreboard.js"
-
-
-// import "../stylesheets/gamePage.css"
-
+import Playground from "../../components/Playground.js"
+import FinishPage from "../../components/FinishPage.js"
+import Scoreboard from "../../components/Scoreboard.js"
 
 export default function GamePage(props) {
   /*  Class names changes 
