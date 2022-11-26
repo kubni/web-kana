@@ -2,9 +2,10 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
-  "encoding/json"
 	"web_kana_v1/kana/kana_logic"
 	"web_kana_v1/kana/tables"
 	"web_kana_v1/models"
@@ -13,13 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	/*  	"github.com/gorilla/schema" */)
-
-// var decoder = schema.NewDecoder()
-
-type AlphabetData struct {
-  Name string
-}
+)
 
 type TemplateData struct {
 	ChosenAlphabet        string
@@ -72,48 +67,24 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 	}
 
 	gc.model = models.NewModel(client, "testdb", "scoreboard3")
-
 	gc.chosenAlphabetTable = make(map[string][]string)
 
 	return &gc
 }
 
-//Main page (selection) controller
-func (gc *GameController) Selection(w http.ResponseWriter, r *http.Request) {
-	// gc.data vs nil - no difference
-  fmt.Println("WE ARE IN SELECTION")	
-}
-
-
-
-
-
 // Game page (playground) controller
 func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
-  fmt.Println("We are in the Playground!")
-  /*
-    For other HTTP methods, or when the Content-Type is not
-    application/x-www-form-urlencoded, the request Body is not read, and
-    r.PostForm is initialized to a non nil, empty value.
+	fmt.Println("We are in the Playground!")
 
-  TODO: Does this mean we have to specify content-type application/x-www-form-urlencoded
-        instead of application/json in frontend/MainReactForm
-*/	
+	var body interface{}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Println(err)
+	}
 
+	fmt.Println("Form request body in Json: ", body)
 
-
-// if err := r.ParseForm(); err != nil {
-// 		fmt.Printf("ParseForm() error: %v", err)
-// 	}
-
-  // var body interface {}
-  // if err := json.NewDecoder(r.Body).Decode()
-   
-
-  testReactForm := r.FormValue("chosenAlphabet")
-  fmt.Println("Test react form: ", testReactForm)
-
-  return
+  // Placeholder return for now
+	return
 
 	chosenAlphabet := r.FormValue("chosen-alphabet")
 	if chosenAlphabet == "Hiragana" {
@@ -214,32 +185,31 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 			// Parse the answer
 			answer := r.FormValue("answer")
 
-      /* 
-         If the character that we need to guess is empty, skip the check, 
-         or in other words, if its not empty, do the check:
-      */
-      // This happens the first time we come here only!
-      if gc.data.Character != "" { 
-        // Check if the answer is correct
-        if kana_logic.Check_answer(answer, gc.data.Character) {
-          gc.data.ResultMessage = "Correct answer!"
-          gc.data.CorrectAnswer = ""
-          gc.data.CurrentPlayerScore++
-        } else {
-          gc.data.CorrectAnswer = tables.Romaji_table[gc.data.Character]
-          gc.data.ResultMessage = fmt.Sprintf("Wrong, the right answer was ")
+			/*
+			   If the character that we need to guess is empty, skip the check,
+			   or in other words, if its not empty, do the check:
+			*/
+			// This happens the first time we come here only!
+			if gc.data.Character != "" {
+				// Check if the answer is correct
+				if kana_logic.Check_answer(answer, gc.data.Character) {
+					gc.data.ResultMessage = "Correct answer!"
+					gc.data.CorrectAnswer = ""
+					gc.data.CurrentPlayerScore++
+				} else {
+					gc.data.CorrectAnswer = tables.Romaji_table[gc.data.Character]
+					gc.data.ResultMessage = fmt.Sprintf("Wrong, the right answer was ")
 
-          if gc.data.CurrentPlayerScore > 0 {
-            gc.data.CurrentPlayerScore--
-          }
-        }
-      } else {
-        gc.data.IsPlayAgainTrue = "false"
-      }
-    }
+					if gc.data.CurrentPlayerScore > 0 {
+						gc.data.CurrentPlayerScore--
+					}
+				}
+			} else {
+				gc.data.IsPlayAgainTrue = "false"
+			}
+		}
 
-
-    gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable)
+		gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable)
 
 	}
 	if err := templates.TmpGame.Execute(w, gc.data); err != nil {
