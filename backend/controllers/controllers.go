@@ -83,7 +83,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("Form request body in Json: ", body)
 
-  // Placeholder return for now
+	// Placeholder return for now
 	return
 
 	chosenAlphabet := r.FormValue("chosen-alphabet")
@@ -122,7 +122,8 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 		gc.data.IsPlayAgainTrue = "true" // We set the IsPlayAgainTrue to true here
 	}
 
-	// Check if the finish button has been clicked, if it was, we don't check the answer and the game stops.
+	// Check if the finish button has been clicked, if it was, we don't check the answer
+	// and the game stops.
 	if r.FormValue("isFinished") == "true" {
 		gc.data.IsFinished = "true"
 	}
@@ -208,9 +209,7 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 				gc.data.IsPlayAgainTrue = "false"
 			}
 		}
-
 		gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable)
-
 	}
 	if err := templates.TmpGame.Execute(w, gc.data); err != nil {
 		panic(err)

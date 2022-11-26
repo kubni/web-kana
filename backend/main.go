@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,11 +18,6 @@ func main() {
 	dbLogic.Ping(client, ctx)
 
 	r := mux.NewRouter()
-
-	r.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
-		// an example API handler
-		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
-	})
 
 	// Initalize the routes
 	routes.InitRoutes(r, client, ctx)
