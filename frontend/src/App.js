@@ -5,14 +5,16 @@ import Game from "./pages/Game";
 
 export default function App() {
   // FIXME: This should dinamically change depending on the button that was clicked on main page.
-  const pageTitle = "hiragana";
 
   /* TODO:
    * path="/" vs index?
    * GamePage should have states passed as props  (maybe an object of objects (corresponding to the component))!!
    */
 
+  // This is similar to the old gc.data struct in backend
+  // TODO: Context ? Since children need this information
   const gameInfo = {
+    chosenAlphabet: "",
     pageTitle: "",
     isFinished: false,
     isDisplayScoreboard: false,
@@ -28,7 +30,8 @@ export default function App() {
           element={
             <Game
               {...gameInfo}
-              pageTitle="hiragana"
+              chosenAlphabet="hiragana"
+              pageTitle="ひらがな"
             />
           }
         />
@@ -37,7 +40,8 @@ export default function App() {
           element={
             <Game
               {...gameInfo}
-              pageTitle="katakana"
+              currentAlphabet="katakana"
+              pageTitle="カタカナ"
             />
           }
         />

@@ -1,6 +1,7 @@
 package kana_logic
 
 import (
+  // "fmt"
 	"math/rand"
 	"time"
 	"web_kana_v1/kana/tables"
@@ -19,6 +20,7 @@ func get_keys(mymap map[string][]string) ([]string, int) {
 }
 
 func Check_answer(answer string, target string) bool {
+  // fmt.Println("Inside check_answer: answer: ", answer, ", target: ", tables.Romaji_table[target])
 	if answer != tables.Romaji_table[target] {
 		return false
 	} else {

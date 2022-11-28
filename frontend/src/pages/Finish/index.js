@@ -1,3 +1,4 @@
+import "./finish.css"
 // ClassName changes:
 // total-score -> totalScore 
 //
@@ -7,8 +8,8 @@
 
 export default function FinishPage() {
   return (
-    <div className="finishPage">
-      <h2>The game is finished. Your total score is: <span className="totalScore">props.currentPlayerScore</span></h2>
+    <div className="finish-page">
+      <h2>The game is finished. Your total score is: <span className="total-score">props.currentPlayerScore</span></h2>
 
       <form>
       </form>

@@ -1,6 +1,6 @@
 :root {
-  --clr-primary: steelblue;
-  --clr-secondary: #f07575;
+  --clr-game-primary: steelblue;
+  --clr-game-secondary: #f07575;
 }
 
 *,
@@ -17,28 +17,30 @@ p {
 }
 
 /* Typography */
-.targetChar {
-  color: var(--clr-secondary);
+.target-char {
+  color: var(--clr-game-secondary);
 }
 
 /* Layout */
-.container {
+.game-page {
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   flex-direction: column;
-  color: var(--clr-primary);
+  color: var(--clr-game-primary);
   gap: 4rem;
+  min-height: 100vh;
 }
 
-header {
+.game-header {
   margin-top: 5rem;
   background-color: lightgrey;
   width: 100%;
   text-align: center;
 }
 
-input {
+.game-input {
   padding: 0.5rem;
   border-radius: 10px;
   box-shadow: 5px 5px rgba(0, 0, 0, 30%);
@@ -46,78 +48,13 @@ input {
   background-color: #e6e6e6;
 }
 
-input:not(.answerInput):hover,
+/* What is this for? */
+.input:not(.answer-input):hover,
 input:focus {
-  outline: 2px solid var(--clr-secondary);
+  outline: 2px solid var(--clr-game-secondary);
 }
 
-.resultInfo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.body.input {
-  color: steelblue;
-}
-
-.finishButton {
-  padding: 1rem 2rem;
-  color: var(--clr-primary);
-  font-weight: bold;
-  font-size: 20px;
-}
-
-.goBackButton {
-  color: var(--clr-primary);
-  font-weight: bold;
-}
-
-table {
-  border-collapse: collapse;
-  margin: 25px 0;
-  font-size: 0.9em;
-  font-family: "Karla", sans-serif;
-  min-width: 400px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-}
-
-thead tr {
-  background-color: var(--clr-primary);
-  color: #ffffff;
-  text-align: left;
-}
-
-th,
-td {
-  padding: 12px 15px;
-}
-
-tbody tr {
-  border-bottom: thin solid #dddddd;
-}
-
-tbody tr:nth-of-type(even) {
-  background-color: #f3f3f3;
-}
-
-tbody tr:last-of-type {
-  border-bottom: 2px solid var(--clr-primary);
-}
-
-tbody tr.active-row {
-  font-weight: bold;
-  background-color: var(--clr-secondary);
-  color: white;
-}
-
-.paginationButtons {
-  display: flex;
-  gap: 10px;
-}
-
-.correctAnswer,
-.totalScore,
-.playerRank {
-  color: var(--clr-secondary);
+/* This is used by both Playground and  Finish pages */
+.total-score {
+  color: var(--clr-game-secondary);
 }

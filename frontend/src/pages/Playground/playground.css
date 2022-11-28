@@ -1,0 +1,16 @@
+.playground {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.finish-button {
+  padding: 1rem 2rem;
+  color: var(--clr-game-primary);
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.correct-answer {
+  color: var(--clr-game-secondary);
+}

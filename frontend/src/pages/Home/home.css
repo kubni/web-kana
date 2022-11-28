@@ -1,6 +1,6 @@
 :root {
-  --clr-primary: #f07575;
-  --clr-neutral: #f9f9f9;
+  --clr-home-primary: #f07575;
+  --clr-home-neutral: #f9f9f9;
 }
 
 *,
@@ -19,32 +19,28 @@ p {
 a {
   text-decoration: none;
 }
-.main-page {
+.home-page {
   background-image: url("../../images/sakura_branch.jpg");
   background-color: #333;
   background-blend-mode: multiply;
   background-position: right top;
   background-repeat: no-repeat;
-  z-index: -1;
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
 }
-.container {
+.home-container {
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
   gap: 1rem;
   flex-direction: column;
-  color: var(--clr-neutral);
-  text-shadow: 1px 1px var(--clr-primary);
+  color: var(--clr-home-neutral);
+  text-shadow: 1px 1px var(--clr-home-primary);
   animation: drop 1s ease forwards;
   min-height: 100vh;
+}
 
-
-  }
-
-header {
+.home-header {
   font-style: oblique;
 }
 
@@ -60,19 +56,19 @@ header {
   }
 }
 
-.buttons {
+.home-buttons {
   display: flex;
   gap: 2rem;
 }
 .hiragana-button, .katakana-button {
   padding: 2rem;
   border-radius: 10px;
-  color: var(--clr-neutral);
+  color: var(--clr-home-neutral);
   text-shadow: 1px 1px black;
   font-weight: 600;
   font-size: 2em;
   font-family: "Karla", sans-serif;
-  background-color: var(--clr-primary);
+  background-color: var(--clr-home-primary);
   cursor: pointer;
   box-shadow: 5px 5px #888888;
 }

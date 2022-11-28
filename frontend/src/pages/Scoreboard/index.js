@@ -1,3 +1,4 @@
+import "./scoreboard.css"
 // ClassName changes:
 // player-rank -> playerRank
 // active-row -> activeRow 
@@ -6,8 +7,8 @@ export default function Scoreboard(props) {
   return (
     <div className="scoreboard">
       <h1>Scoreboard</h1>
-      <h2>Your rank is: <span className="playerRank">props.currentPlayerRank</span></h2>
-      <table>
+      <h2>Your rank is: <span className="player-rank">props.currentPlayerRank</span></h2>
+      <table className="scoreboard-table">
         <thead>
           <tr>
             <th>Rank</th>
@@ -30,7 +31,7 @@ export default function Scoreboard(props) {
         </tbody>
       </table>
 
-      <div className="paginationButtons">
+      <div className="pagination-buttons">
       { 
         props.currentPage !== 0 && 
           <form>    

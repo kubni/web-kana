@@ -1,0 +1,46 @@
+.scoreboard-table {
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 0.9em;
+  font-family: "Karla", sans-serif;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.scoreboard-table thead tr {
+  background-color: var(--clr-game-primary);
+  color: #ffffff;
+  text-align: left;
+}
+
+.scoreboard-table th,
+.scoreboard-table td {
+  padding: 12px 15px;
+}
+
+.scoreboard-table tbody tr {
+  border-bottom: thin solid #dddddd;
+}
+
+.scoreboard-table tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+.scoreboard-table tbody tr:last-of-type {
+  border-bottom: 2px solid var(--clr-game-primary);
+}
+
+.scoreboard-table tbody tr.active-row {
+  font-weight: bold;
+  background-color: var(--clr-game-secondary);
+  color: white;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.player-rank {
+  color: var(--clr-game-secondary);
+}

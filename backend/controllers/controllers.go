@@ -1,7 +1,6 @@
 /* TODO:
-  - Domain driven design -> Separate API functions and game logic in separate packages -
+- Domain driven design -> Separate API functions and game logic in separate packages -
 */
-
 
 package controllers
 
@@ -11,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	"web_kana_v1/kana/kana_logic"
 	"web_kana_v1/kana/tables"
 	"web_kana_v1/models"
@@ -77,27 +77,67 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 	return &gc
 }
 
-// Should this have (gc *GameController) or not?
-// Probably not, and should go into API package in the future
-func ParseAlphabet(w http.ResponseWriter, r *http.Request) {
- 	var alphabetData struct{
-    ChosenAlphabet string `json:"chosenAlphabet"`
-  }
-	if err := json.NewDecoder(r.Body).Decode(&alphabetData); err != nil {
+// These should maybe go into API package
+// However, they are still related to the gameplay
+
+func CheckAnswer(w http.ResponseWriter, r *http.Request) {
+	var userAnswerData struct {
+		UserAnswer string `json:"userAnswer"`
+    CorrectAnswer string `json:"correctAnswer"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&userAnswerData); err != nil {
 		log.Println(err)
 	}
 
-	fmt.Println("Chosen alphabet: ", alphabetData.ChosenAlphabet)
+	userAnswer := userAnswerData.UserAnswer
+  correctAnswerCharacter := userAnswerData.CorrectAnswer 
+
+  isAnswerCorrect := kana_logic.Check_answer(userAnswer, correctAnswerCharacter)
+  if err := json.NewEncoder(w).Encode(isAnswerCorrect); err != nil {
+    log.Println(err)
+    // TODO: Error handling (we can't stop the server)
+  }
+} 
+
+
+// 	if kana_logic.Check_answer(userAnswer, correctAnswer) {
+// 		// gc.data.ResultMessage = "Correct answer!"
+// 		// gc.data.CorrectAnswer = ""
+// 		// gc.data.CurrentPlayerScore++
+// 	} else {
+// 		// gc.data.CorrectAnswer = tables.Romaji_table[gc.data.Character]
+// 		// gc.data.ResultMessage = fmt.Sprintf("Wrong, the right answer was ")
+//
+// 		// if gc.data.CurrentPlayerScore > 0 {
+// 		// 	gc.data.CurrentPlayerScore--
+// 		// }
+// 	}
+// }
+
+func GenerateHiraganaCharacter(w http.ResponseWriter, r *http.Request) {
+	generatedCharacter := kana_logic.Play_all_gamemode(tables.Hiragana_table)
+
+	// Encode the response (generatedCharacter) and send it to the frontend
+  if err := json.NewEncoder(w).Encode(generatedCharacter); err != nil {
+    log.Println(err)
+    // TODO: Error handling (we can't stop the server)
+  }
 }
+func GenerateKatakanaCharacter(w http.ResponseWriter, r *http.Request) {
+	generatedCharacter := kana_logic.Play_all_gamemode(tables.Katakana_table)
 
-
-
+	// Encode the response (generatedCharacter) and send it to the frontend
+  if err := json.NewEncoder(w).Encode(generatedCharacter); err != nil {
+    log.Println(err)
+    // TODO: Error handling (we can't stop the server)
+  }
+}
+////////////////////////////////////////////////////////////////////////////////////
 
 // Game page (playground) controller
 func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("We are in the Playground!")
-
-  // 
 
 	// Placeholder return for now
 	return
