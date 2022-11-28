@@ -142,21 +142,10 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 	// Placeholder return for now
 	return
 
-	chosenAlphabet := r.FormValue("chosen-alphabet")
-	if chosenAlphabet == "Hiragana" {
-		gc.chosenAlphabetTable = tables.Hiragana_table
-		gc.data.ChosenAlphabet = "hiragana"
-	}
-	if chosenAlphabet == "Katakana" {
-		gc.chosenAlphabetTable = tables.Katakana_table
-		gc.data.ChosenAlphabet = "katakana"
-	}
 
-	if gc.data.ChosenAlphabet == "hiragana" {
-		gc.data.PageTitle = "ひらがな"
-	} else {
-		gc.data.PageTitle = "カタカナ"
-	}
+
+
+
 
 	isPlayAgainTrue := r.FormValue("isPlayAgainTrue")
 	if isPlayAgainTrue == "true" {

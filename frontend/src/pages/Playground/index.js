@@ -16,21 +16,43 @@ export default function Playground(props) {
   
   // States:
   const [targetCharacter, setTargetCharacter] = useState("")
-  const [answer, setAnswer] = useState({"userAnswer": "", "isAnswerCorrect": false})
-  
-   useEffect(() => {
+  const [answerInfo, setAnswerInfo] = useState({"userAnswer": "", "isAnswerCorrect": false})
+ 
+
+  // AbortController for useEffect fetch cleanup
+  const fetchHiraganaAbortController = new AbortController(); // TODO: Can 1 AbortController monitor more than 1 fetch request
+  const fetchKatakanaAbortController = new AbortController();
+  useEffect(() => {
     if(chosenAlphabet === "hiragana")
     {
-        fetch("http://localhost:8000/game/generateHiraganaCharacter")
-          .then(res => res.json())
-          .then(jsonData => setTargetCharacter(jsonData)) 
-    } else {
-      fetch("http://localhost:8000/game/generateKatakanaCharacter")
-        .then(res => res.json())
-        .then(jsonData => setTargetCharacter(jsonData))
+      fetch
+      (
+        "http://localhost:8000/game/generateHiraganaCharacter",
+        {
+          signal: fetchHiraganaAbortController.signal
+        }  
+      ).then(res => res.json())
+       .then(jsonData => setTargetCharacter(jsonData)) 
+    }
+    else 
+    {
+      fetch
+      (
+        "http://localhost:8000/game/generateKatakanaCharacter",
+        {
+          signal: fetchKatakanaAbortController.signal
+        }
+      ).then(res => res.json())
+       .then(jsonData => setTargetCharacter(jsonData))
     }
 
-  }, [answer.userAnswer]) 
+    // Cleanup function
+    return () => {
+      fetchHiraganaAbortController.abort()
+      fetchKatakanaAbortController.abort()
+    }
+
+  }, [answerInfo.userAnswer]) 
   console.log("Target Character: ", targetCharacter)
 
 
@@ -48,11 +70,14 @@ export default function Playground(props) {
         "correctAnswer": targetCharacter
       })
     }).then(res => res.json()) 
-      .then(jsonData => jsonData === true ? setAnswer({"userAnswer": userAnswer, "isAnswerCorrect": true}) 
-                                          : setAnswer({"userAnswer": userAnswer, "isAnswerCorrect": false})
+      .then
+      (
+          jsonData => jsonData === true 
+            ? setAnswerInfo({"userAnswer": userAnswer, "isAnswerCorrect": true}) 
+            : setAnswerInfo({"userAnswer": userAnswer, "isAnswerCorrect": false})
       )
   }
-  console.log("Is answer correct: ", answer.isAnswerCorrect)
+  console.log("Is answer correct: ", answerInfo.isAnswerCorrect)
 
   return (
     <div className="playground">
