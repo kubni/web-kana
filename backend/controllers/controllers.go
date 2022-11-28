@@ -81,20 +81,30 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 // However, they are still related to the gameplay
 
 func CheckAnswer(w http.ResponseWriter, r *http.Request) {
-	var userAnswerData struct {
+	var requestData struct {
 		UserAnswer string `json:"userAnswer"`
-    CorrectAnswer string `json:"correctAnswer"`
+    CorrectAnswerCharacter string `json:"correctAnswerCharacter"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&userAnswerData); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
 		log.Println(err)
 	}
 
-	userAnswer := userAnswerData.UserAnswer
-  correctAnswerCharacter := userAnswerData.CorrectAnswer 
 
-  isAnswerCorrect := kana_logic.Check_answer(userAnswer, correctAnswerCharacter)
-  if err := json.NewEncoder(w).Encode(isAnswerCorrect); err != nil {
+  // Prepare a response
+	userAnswer := requestData.UserAnswer
+  correctAnswerCharacter := requestData.CorrectAnswerCharacter 
+  isAnswerCorrect, correctAnswerRomaji := kana_logic.Check_answer(userAnswer, correctAnswerCharacter)
+
+  responseData := struct {
+    IsAnswerCorrect bool `json:"isAnswerCorrect"` 
+    CorrectAnswerRomaji string `json:"correctAnswerRomaji"`
+  } {
+    IsAnswerCorrect: isAnswerCorrect,
+    CorrectAnswerRomaji: correctAnswerRomaji, 
+  }
+
+  if err := json.NewEncoder(w).Encode(responseData); err != nil {
     log.Println(err)
     // TODO: Error handling (we can't stop the server)
   }
@@ -238,7 +248,8 @@ func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
 			// This happens the first time we come here only!
 			if gc.data.Character != "" {
 				// Check if the answer is correct
-				if kana_logic.Check_answer(answer, gc.data.Character) {
+        isAnswerCorrect, _ :=  kana_logic.Check_answer(answer, gc.data.Character)
+				if isAnswerCorrect {
 					gc.data.ResultMessage = "Correct answer!"
 					gc.data.CorrectAnswer = ""
 					gc.data.CurrentPlayerScore++

@@ -20,7 +20,8 @@ export default function Playground(props) {
   // TODO: Is it good to use one big object instead of dealing with multiple setters (and rerenders)
   const [playgroundInfo, setPlaygroundInfo] = useState({
     "userAnswer": "",
-    "isAnswerCorrect": false,
+    "isAnswerCorrect": true,
+    "correctAnswerRomaji": "",
     "currentPlayerScore": 0
   })
 
@@ -72,22 +73,25 @@ export default function Playground(props) {
       },
       body: JSON.stringify({
         "userAnswer": userAnswer,
-        "correctAnswer": targetCharacter
+        "correctAnswerCharacter": targetCharacter
       })
     }).then(res => res.json()) 
       .then
       (
-        jsonData => jsonData === true 
+        jsonData => jsonData.isAnswerCorrect === true 
           ? setPlaygroundInfo({
             "userAnswer": userAnswer,
             "isAnswerCorrect": true,
+            "correctAnswerRomaji": jsonData.correctAnswerRomaji,
             "currentPlayerScore": playgroundInfo.currentPlayerScore + 1
           }) 
           : setPlaygroundInfo({
             "userAnswer": userAnswer,
             "isAnswerCorrect": false,
-            "currentPlayerScore": playgroundInfo.currentPlayerScore > 0 ? playgroundInfo.currentPlayerScore -1 : playgroundInfo.currentPlayerScore
-
+            "correctAnswerRomaji": jsonData.correctAnswerRomaji,
+            "currentPlayerScore": playgroundInfo.currentPlayerScore > 0 
+                                    ? playgroundInfo.currentPlayerScore - 1 
+                                    : playgroundInfo.currentPlayerScore
           })
       )
   }
@@ -105,7 +109,11 @@ export default function Playground(props) {
 
       <div className="result-info">
         <h2>Current score: <span className="total-score">{playgroundInfo.currentPlayerScore}</span></h2>
-        { !playgroundInfo.isAnswerCorrect && <h3 className="result-message">Wrong, the correct answer was <span className="correct-answer">{targetCharacter}</span></h3> }
+        { !playgroundInfo.isAnswerCorrect && 
+          <h3 className="result-message">
+            Wrong, the correct answer was <span className="correct-answer">{playgroundInfo.correctAnswerRomaji}</span>
+          </h3>
+        }
       </div>
         
       <form>

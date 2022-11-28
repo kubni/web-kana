@@ -19,12 +19,13 @@ func get_keys(mymap map[string][]string) ([]string, int) {
 	return keys, i
 }
 
-func Check_answer(answer string, target string) bool {
+func Check_answer(answer string, target string) (bool, string) {
   // fmt.Println("Inside check_answer: answer: ", answer, ", target: ", tables.Romaji_table[target])
-	if answer != tables.Romaji_table[target] {
-		return false
+  correctAnswerRomaji := tables.Romaji_table[target]
+	if answer != correctAnswerRomaji {
+		return false, correctAnswerRomaji
 	} else {
-		return true
+		return true, correctAnswerRomaji
 	}
 }
 
