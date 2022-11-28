@@ -10,15 +10,7 @@ export default function GamePage(props) {
     * gamePage -> container 
   */
 
-  // We create this here because all of the children will need it
-  const [currentPlayerScore, setCurrentPlayerScore] = useState(0)  
-
-
-  // const currentScoreFromGolang = getScoreFromBackend()
-  function incrementPlayerScore() {
-    // setCurrentPlayerScore(currentScoreFromGolang + 1)
-    setCurrentPlayerScore(currentPlayerScore + 1)
-  }
+ 
 
   return (
       <div className="game-page">  

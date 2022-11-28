@@ -16,8 +16,13 @@ export default function Playground(props) {
   
   // States:
   const [targetCharacter, setTargetCharacter] = useState("")
-  const [answerInfo, setAnswerInfo] = useState({"userAnswer": "", "isAnswerCorrect": false})
- 
+
+  // TODO: Is it good to use one big object instead of dealing with multiple setters (and rerenders)
+  const [playgroundInfo, setPlaygroundInfo] = useState({
+    "userAnswer": "",
+    "isAnswerCorrect": false,
+    "currentPlayerScore": 0
+  })
 
   // AbortController for useEffect fetch cleanup
   const fetchHiraganaAbortController = new AbortController(); // TODO: Can 1 AbortController monitor more than 1 fetch request
@@ -52,7 +57,7 @@ export default function Playground(props) {
       fetchKatakanaAbortController.abort()
     }
 
-  }, [answerInfo.userAnswer]) 
+  }, [playgroundInfo.userAnswer]) 
   console.log("Target Character: ", targetCharacter)
 
 
@@ -72,12 +77,21 @@ export default function Playground(props) {
     }).then(res => res.json()) 
       .then
       (
-          jsonData => jsonData === true 
-            ? setAnswerInfo({"userAnswer": userAnswer, "isAnswerCorrect": true}) 
-            : setAnswerInfo({"userAnswer": userAnswer, "isAnswerCorrect": false})
+        jsonData => jsonData === true 
+          ? setPlaygroundInfo({
+            "userAnswer": userAnswer,
+            "isAnswerCorrect": true,
+            "currentPlayerScore": playgroundInfo.currentPlayerScore + 1
+          }) 
+          : setPlaygroundInfo({
+            "userAnswer": userAnswer,
+            "isAnswerCorrect": false,
+            "currentPlayerScore": playgroundInfo.currentPlayerScore > 0 ? playgroundInfo.currentPlayerScore -1 : playgroundInfo.currentPlayerScore
+
+          })
       )
   }
-  console.log("Is answer correct: ", answerInfo.isAnswerCorrect)
+  console.log("Is answer correct: ", playgroundInfo.isAnswerCorrect)
 
   return (
     <div className="playground">
@@ -90,8 +104,8 @@ export default function Playground(props) {
       </form>
 
       <div className="result-info">
-        <h2>Current score: <span className="total-score">props.currentPlayerScore</span></h2>
-        <h3 className="result-message">props.resultMessage<span className="correct-answer">props.correctAnswer</span></h3>
+        <h2>Current score: <span className="total-score">{playgroundInfo.currentPlayerScore}</span></h2>
+        { !playgroundInfo.isAnswerCorrect && <h3 className="result-message">Wrong, the correct answer was <span className="correct-answer">{targetCharacter}</span></h3> }
       </div>
         
       <form>
