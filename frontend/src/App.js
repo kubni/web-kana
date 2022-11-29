@@ -4,21 +4,14 @@ import Home from "./pages/Home";
 import Game from "./pages/Game";
 
 export default function App() {
-  // FIXME: This should dinamically change depending on the button that was clicked on main page.
-
   /* TODO:
    * path="/" vs index?
    * GamePage should have states passed as props  (maybe an object of objects (corresponding to the component))!!
    */
 
-  // This is similar to the old gc.data struct in backend
-  // TODO: Context ? Since children need this information
   const gameInfo = {
     chosenAlphabet: "",
     pageTitle: "",
-    isFinished: false,
-    isDisplayScoreboard: false,
-    isUsernameValid: false,
   }
 
   return (

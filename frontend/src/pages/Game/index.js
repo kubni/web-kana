@@ -1,3 +1,6 @@
+// TODO: Add Context here to replace passing down state to children
+
+
 import "./game.css";
 import React, { useState } from "react";
 
@@ -8,6 +11,7 @@ import Scoreboard from "../../pages/Scoreboard";
 export default function GamePage(props) {
   
   const [currentPlayerScore, setCurrentPlayerScore] = useState(0)
+  const [isFinished, setIsFinished] = useState(false) 
 
   return (
     <div className="game-page">
@@ -15,10 +19,11 @@ export default function GamePage(props) {
         <h1 className="game-header">{props.pageTitle}</h1>
       </header>
 
-      {!props.isFinished && (
+      {!isFinished && (
         <Playground
-          chosenAlphabet={props.chosenAlphabet}
-          setCurrentPlayerScore = 
+          chosenAlphabet = {props.chosenAlphabet}
+          currentPlayerScore = {currentPlayerScore}
+          changeCurrentPlayerScoreBy = 
           { 
             (changeScoreBy) => {
               setCurrentPlayerScore( (oldPlayerScore) => {
@@ -27,10 +32,12 @@ export default function GamePage(props) {
               })
             }
           }
+          isFinished = {isFinished}
+          finishGame = {() => setIsFinished(true)}
         />
       )}
-      {props.isFinished && !props.isDisplayScoreboard && <FinishPage />}
-      {props.isFinished && props.isDisplayScoreboard && props.isUsernameValid && (
+      {isFinished && !props.isDisplayScoreboard && <FinishPage />}
+      {isFinished && props.isDisplayScoreboard && props.isUsernameValid && (
         <Scoreboard
           scoreboard={[
             { ID: "1", rank: 1, username: "test", score: "4" },
@@ -40,7 +47,7 @@ export default function GamePage(props) {
           currentPage={0}
         />
       )}
-      {props.isFinished && props.isDisplayScoreboard && !props.isUsernameValid && (
+      {isFinished && props.isDisplayScoreboard && !props.isUsernameValid && (
         <>
           <p className="invalid-username-msg">
             The username you entered already exists! Please, choose another one.

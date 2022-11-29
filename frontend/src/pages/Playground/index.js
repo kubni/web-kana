@@ -22,6 +22,7 @@ export default function Playground(props) {
   const fetchHiraganaAbortController = new AbortController(); // TODO: Can 1 AbortController monitor more than 1 fetch request
   const fetchKatakanaAbortController = new AbortController();
   useEffect(() => {
+    console.log("We are in useEffect")
     if (chosenAlphabet === "hiragana") {
       fetch("http://localhost:8000/game/generateHiraganaCharacter", {
         signal: fetchHiraganaAbortController.signal,
@@ -41,10 +42,11 @@ export default function Playground(props) {
       fetchHiraganaAbortController.abort();
       fetchKatakanaAbortController.abort();
     };
-  }, [playgroundInfo.userAnswer]);
+  }, [playgroundInfo.userAnswer, props.currentPlayerScore]);
   console.log("Target Character: ", targetCharacter);
 
   function onAnswerFormSubmit(event) {
+    console.log("We are in onAnswerformSubmit")
     event.preventDefault();
     const userAnswer = ref.current.value;
     ref.current.value = "";
@@ -61,26 +63,40 @@ export default function Playground(props) {
       }),
     })
       .then((res) => res.json())
-      .then((jsonData) =>
-        jsonData.isAnswerCorrect === true
-          ? setPlaygroundInfo({
+      .then((jsonData) => {
+        if(jsonData.isAnswerCorrect === true)
+        {
+          /* 
+            * Important: Two setStates happen here, but React is using batching probably so there are no rerenders 
+            * between them
+          */ 
+          setPlaygroundInfo({
               userAnswer: userAnswer,
               isAnswerCorrect: true,
               correctAnswerRomaji: jsonData.correctAnswerRomaji,
-              currentPlayerScore: playgroundInfo.currentPlayerScore + 1,
-            })
-          : setPlaygroundInfo({
+            });
+          props.changeCurrentPlayerScoreBy(1);
+        }
+        else  
+        {
+          setPlaygroundInfo({
               userAnswer: userAnswer,
               isAnswerCorrect: false,
               correctAnswerRomaji: jsonData.correctAnswerRomaji,
-              currentPlayerScore:
-                playgroundInfo.currentPlayerScore > 0
-                  ? playgroundInfo.currentPlayerScore - 1
-                  : playgroundInfo.currentPlayerScore,
-            })
-      );
+          });
+          props.changeCurrentPlayerScoreBy(-1);
+        }
+      })
   }
   console.log("Is answer correct: ", playgroundInfo.isAnswerCorrect);
+
+
+  function onFinishGameFormSubmit (event) {
+    event.preventDefault()
+    props.finishGame()
+  }
+
+
 
   return (
     <div className="playground">
@@ -94,14 +110,13 @@ export default function Playground(props) {
 
       <div className="result-info">
         <h2>
-          Current score:{" "}
-          <span className="total-score">
-            {playgroundInfo.currentPlayerScore}
+          Current score: <span className="total-score">
+            {props.currentPlayerScore}
           </span>
         </h2>
         {!playgroundInfo.isAnswerCorrect && (
           <h3 className="result-message">
-            Wrong, the correct answer was{" "}
+            Wrong, the correct answer was
             <span className="correct-answer">
               {playgroundInfo.correctAnswerRomaji}
             </span>
@@ -109,18 +124,9 @@ export default function Playground(props) {
         )}
       </div>
 
-      <form>
+      <form onSubmit={onFinishGameFormSubmit}>
         <button className="finish-button">Finish</button>
       </form>
     </div>
   );
-  /* FIXME:
-   * Finish form at the bottom of Playground component JSX should go to Finish page, but we can't pass currentPlayerScore
-   * page title from this component to Finish.
-   *
-   * We also can't pass them from App to Game and then to Finish because we calculate currentPlayerScore here as a state
-   *
-   * Ideas:
-   * playGroundInfo should be in Game component 
-   */
 }
