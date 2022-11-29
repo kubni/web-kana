@@ -1,0 +1,31 @@
+:root {
+  --clr-home-primary: #f07575;
+  --clr-home-neutral: #f9f9f9;
+  --clr-game-primary: steelblue;
+  --clr-game-secondary: #f07575;
+
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body,
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+button {
+  border-radius: 10px;
+  box-shadow: 5px 5px rgba(0, 0, 0, 30%);
+  border: none;
+  background-color: #e6e6e6;
+}

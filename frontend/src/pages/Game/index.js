@@ -1,44 +1,53 @@
-import "./game.css"
-import React, {useState} from "react"
+import "./game.css";
+import React, { useState } from "react";
 
-import Playground from "../../pages/Playground"
-import FinishPage from "../../pages/Finish"
-import Scoreboard from "../../pages/Scoreboard"
+import Playground from "../../pages/Playground";
+import FinishPage from "../../pages/Finish";
+import Scoreboard from "../../pages/Scoreboard";
 
 export default function GamePage(props) {
-  /*  Class names changes 
-    * gamePage -> container 
-  */
-
- 
+  
+  const [currentPlayerScore, setCurrentPlayerScore] = useState(0)
 
   return (
-      <div className="game-page">  
-       <header>
+    <div className="game-page">
+      <header>
         <h1 className="game-header">{props.pageTitle}</h1>
-       </header>
+      </header>
 
-      {/* For now I have recreated it as it was in Golang. There is a high chance it can be made simpler in React */}
-      { !props.isFinished &&
+      {!props.isFinished && (
         <Playground
-          chosenAlphabet={props.chosenAlphabet}      
+          chosenAlphabet={props.chosenAlphabet}
+          setCurrentPlayerScore = 
+          { 
+            (changeScoreBy) => {
+              setCurrentPlayerScore( (oldPlayerScore) => {
+                const newScore = oldPlayerScore + changeScoreBy 
+                return newScore > 0 ? newScore : 0
+              })
+            }
+          }
         />
-      }     {/* if(!isFinished)*/} 
-      {  props.isFinished && !props.isDisplayScoreboard && <FinishPage />} {/* else if !isDisplayScoreboard*/}     
-      {  props.isFinished && props.isDisplayScoreboard && props.isUsernameValid && 
-          <Scoreboard  
-            scoreboard={[{ID:"1", rank:1, username:"test", score:"4"}, {ID:"2", rank:2, username:"test2", score:"2"}]}
-            currentPlayerStringID="1"
-            currentPage={0}
-          />
-      } {/* else {if .isUsernameValid} */} 
-      {  props.isFinished && props.isDisplayScoreboard && !props.isUsernameValid && 
-          <>
-            <p>The username you entered already exists! Please, choose another one.</p>
-            <FinishPage />
-          </>
-      } 
-
-      </div>
-  )
+      )}
+      {props.isFinished && !props.isDisplayScoreboard && <FinishPage />}
+      {props.isFinished && props.isDisplayScoreboard && props.isUsernameValid && (
+        <Scoreboard
+          scoreboard={[
+            { ID: "1", rank: 1, username: "test", score: "4" },
+            { ID: "2", rank: 2, username: "test2", score: "2" },
+          ]}
+          currentPlayerStringID="1"
+          currentPage={0}
+        />
+      )}
+      {props.isFinished && props.isDisplayScoreboard && !props.isUsernameValid && (
+        <>
+          <p className="invalid-username-msg">
+            The username you entered already exists! Please, choose another one.
+          </p>
+          <FinishPage />
+        </>
+      )}
+    </div>
+  );
 }

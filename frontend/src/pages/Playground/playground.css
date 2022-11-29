@@ -10,6 +10,9 @@
   font-weight: bold;
   font-size: 20px;
 }
+.finish-button:hover {
+  border: solid 1.5px var(--clr-game-primary);
+}
 
 .correct-answer {
   color: var(--clr-game-secondary);
