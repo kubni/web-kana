@@ -6,10 +6,10 @@ import "./finish.css"
 // Forms with "hidden" hack are probably not needed in react and can be done in a better way
 
 
-export default function FinishPage() {
+export default function FinishPage(props) {
   return (
     <div className="finish-page">
-      <h2>The game is finished. Your total score is: <span className="total-score">props.currentPlayerScore</span></h2>
+      <h2>The game is finished. Your total score is: <span className="total-score">{props.currentPlayerScore}</span></h2>
 
       <form>
       </form>

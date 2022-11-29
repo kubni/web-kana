@@ -1,3 +1,5 @@
+// TODO: For some reason there is an Uncaught promise DOMException on this page, even though everything seems to work.
+
 import "./playground.css";
 import React, { useState, useEffect, useRef } from "react";
 
@@ -95,8 +97,6 @@ export default function Playground(props) {
     event.preventDefault()
     props.finishGame()
   }
-
-
 
   return (
     <div className="playground">

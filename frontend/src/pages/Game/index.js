@@ -36,7 +36,11 @@ export default function GamePage(props) {
           finishGame = {() => setIsFinished(true)}
         />
       )}
-      {isFinished && !props.isDisplayScoreboard && <FinishPage />}
+      {isFinished && !props.isDisplayScoreboard &&
+        <FinishPage 
+          currentPlayerScore = {currentPlayerScore}
+        />
+      }
       {isFinished && props.isDisplayScoreboard && props.isUsernameValid && (
         <Scoreboard
           scoreboard={[
