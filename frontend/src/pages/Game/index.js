@@ -12,6 +12,7 @@ export default function GamePage(props) {
   
   const [currentPlayerScore, setCurrentPlayerScore] = useState(0)
   const [isFinished, setIsFinished] = useState(false) 
+  const [isDisplayScoreboard, setIsDisplayScoreboard] = useState(false)
 
   return (
     <div className="game-page">
@@ -40,6 +41,8 @@ export default function GamePage(props) {
         <FinishPage 
           currentPlayerScore = {currentPlayerScore}
           chosenAlphabet = {props.chosenAlphabet}
+          isDisplayScoreboard = {isDisplayScoreboard}
+          setIsDisplayScoreboardToTrue = {() => setIsDisplayScoreboard(true)}
         />
       }
       {isFinished && props.isDisplayScoreboard && props.isUsernameValid && (
@@ -60,9 +63,13 @@ export default function GamePage(props) {
           <FinishPage
             currentPlayerScore = {currentPlayerScore}
             chosenAlphabet = {props.chosenAlphabet}
+            isDisplayScoreboard = {isDisplayScoreboard}
+            setIsDisplayScoreboardToTrue = {() => setIsDisplayScoreboard(true)}
           />
         </>
       )}
     </div>
   );
 }
+
+// The second rendering of FinishPage when isUsernameValid is false can be done in a better way, probably together with the first one

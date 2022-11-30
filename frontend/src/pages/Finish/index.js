@@ -1,28 +1,65 @@
-import "./finish.css"
+import "./finish.css";
 // ClassName changes:
-// total-score -> totalScore 
+// total-score -> totalScore
 //
-import {Link} from "react-router-dom"
+import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 
 export default function FinishPage(props) {
+  const ref = useRef();
 
-  function onFormSubmit() {
+  // document = bson.M{
+  // 				"ID":       gc.data.CurrentPlayerStringID,
+  // 				"Username": gc.data.CurrentPlayer,
+  // 				"Score":    gc.data.CurrentPlayerScore,
+  // 				"Rank":     gc.data.CurrentPlayerRank,
+  // 			}
 
+  function onFormSubmit(event) {
+    event.preventDefault();
+
+    const userData = {
+      username: ref.current.value,
+      score: props.currentPlayerScore,
+    };
+
+    // Make the request for the user to be entered into the database
+    fetch("http://localhost:8000/game/insertUserIntoDatabase", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ...userData }),
+    })
+      .then((res) => res.json())
+      .then((jsonData) => {
+        // TODO: Better error handling
+        if (!jsonData.isInserted)
+          console.log("InsertIntoDB failed in the backend");
+      });
+
+    // TODO: change isDisplayScoreboard to state in game
+    props.setIsDisplayScoreboardToTrue();
   }
 
   return (
     <div className="finish-page">
-      <h2>The game is finished. Your total score is: <span className="total-score">{props.currentPlayerScore}</span></h2>
+      <h2>
+        The game is finished. Your total score is:{" "}
+        <span className="total-score">{props.currentPlayerScore}</span>
+      </h2>
 
       <div className="play-again-button">
-        <Link to={`/game/${props.chosenAlphabet}`} className="go-back-button">Play Again</Link>
+        <Link to={`/game/${props.chosenAlphabet}`} className="go-back-button">
+          Play Again
+        </Link>
       </div>
 
       <h2>If you want to save your result, type in your username: </h2>
 
       <form onSubmit={onFormSubmit}>
-        <input className="username-input" type="text"/>
+        <input className="username-input" ref={ref} type="text" />
       </form>
     </div>
-  )
+  );
 }
