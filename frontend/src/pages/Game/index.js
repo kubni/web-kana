@@ -12,7 +12,13 @@ export default function GamePage(props) {
   
   const [currentPlayerScore, setCurrentPlayerScore] = useState(0)
   const [isFinished, setIsFinished] = useState(false) 
-  const [isDisplayScoreboard, setIsDisplayScoreboard] = useState(false)
+  const [scoreboardInfo, setScoreboardInfo] = useState({
+    isDisplayScoreboard: false,
+    isUsernameValid: false,
+  })
+
+
+  // TODO: Do we really need to pass isDisplayScoreboard and isUsernameValid to finishPage or just their setter
 
   return (
     <div className="game-page">
@@ -37,15 +43,19 @@ export default function GamePage(props) {
           finishGame = {() => setIsFinished(true)}
         />
       )}
-      {isFinished && !props.isDisplayScoreboard &&
+      {isFinished && !scoreboardInfo.isDisplayScoreboard &&
         <FinishPage 
           currentPlayerScore = {currentPlayerScore}
           chosenAlphabet = {props.chosenAlphabet}
-          isDisplayScoreboard = {isDisplayScoreboard}
-          setIsDisplayScoreboardToTrue = {() => setIsDisplayScoreboard(true)}
+          scoreboardInfo = {{...scoreboardInfo}}
+          setScoreboardInfo = {(isValid) => setScoreboardInfo({
+            isDisplayScoreboard: true,
+            isUsernameValid: isValid
+          })}
+
         />
       }
-      {isFinished && props.isDisplayScoreboard && props.isUsernameValid && (
+      {isFinished && scoreboardInfo.isDisplayScoreboard && scoreboardInfo.isUsernameValid && (
         <Scoreboard
           scoreboard={[
             { ID: "1", rank: 1, username: "test", score: "4" },
@@ -55,7 +65,7 @@ export default function GamePage(props) {
           currentPage={0}
         />
       )}
-      {isFinished && props.isDisplayScoreboard && !props.isUsernameValid && (
+      {isFinished && scoreboardInfo.isDisplayScoreboard && !scoreboardInfo.isUsernameValid && (
         <>
           <p className="invalid-username-msg">
             The username you entered already exists! Please, choose another one.
@@ -63,8 +73,12 @@ export default function GamePage(props) {
           <FinishPage
             currentPlayerScore = {currentPlayerScore}
             chosenAlphabet = {props.chosenAlphabet}
-            isDisplayScoreboard = {isDisplayScoreboard}
-            setIsDisplayScoreboardToTrue = {() => setIsDisplayScoreboard(true)}
+            scoreboardInfo = {{...scoreboardInfo}}
+            setScoreboardInfo = {(isValid) => setScoreboardInfo({
+              isDisplayScoreboard: true,
+              isUsernameValid: isValid
+            })}
+           
           />
         </>
       )}

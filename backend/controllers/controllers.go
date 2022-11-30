@@ -83,7 +83,7 @@ type GameController struct {
 // }
 
 func NewGameController(ctx context.Context, client *mongo.Client) *GameController {
-  var gc GameController
+	var gc GameController
 
 	gc.model = models.NewModel(client, "testdb", "scoreboard3")
 	gc.chosenAlphabetTable = make(map[string][]string)
@@ -154,8 +154,17 @@ func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request)
 		log.Println(err)
 	}
 
-  fmt.Println("userData: ", userData);
+	fmt.Println("userData: ", userData)
 
+	// TODO: Rename CheckIfUsernameAlreadyExists to doesUsernameAlreadyExists
+  var isUsernameValid bool
+	if userData.Username == "" || gc.model.CheckIfUsernameAlreadyExists(userData.Username) {
+    fmt.Println("Username already exists: ", userData.Username)
+		isUsernameValid = false
+	} else {
+    fmt.Println("Username is okay:", userData.Username)
+		isUsernameValid = true
+	}
 
 	// Declare a mongoDB document
 	document := bson.M{
@@ -169,29 +178,37 @@ func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request)
 	fmt.Println("Document: ", document)
 	fmt.Println("Inserting the user into the db...")
 
+	var insertInfo struct {
+		IsInserted bool   `json:"isInserted"`
+		Error      string `json:"error"`
+	}
+
 	insertOneResult, err := gc.model.InsertOne(document)
 	if err != nil {
 		log.Println(err)
+		insertInfo.IsInserted = false
+    if !isUsernameValid {
+      insertInfo.Error = "Username already exists"
+    } else {
+      insertInfo.Error = err.Error()
+    }
+
 	} else {
+		insertInfo.IsInserted = true
+		insertInfo.Error = ""
+
 		fmt.Println("Insert result: ", insertOneResult)
 
-		// Decode the insertOneResult into a string
+		// Decode Id into a string // TODO: Is this needed, ID is always empty in the DB
 		if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
 			gc.data.CurrentPlayerObjectID = id
 			gc.data.CurrentPlayerStringID = id.Hex()
-
-
-      // Send a response that everything is okay 
-      responseData := struct {
-        IsInserted     bool  `json:"isInserted"` 
-      }{
-        IsInserted: true, 
-      }
-      if err := json.NewEncoder(w).Encode(responseData); err != nil {
-    		log.Println(err)
-      }
-
 		}
+	}
+
+	// We need to actually send a json response about the insert action status
+	if err := json.NewEncoder(w).Encode(insertInfo); err != nil {
+		log.Println(err)
 	}
 }
 

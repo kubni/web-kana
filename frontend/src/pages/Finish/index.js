@@ -2,7 +2,7 @@ import "./finish.css";
 // ClassName changes:
 // total-score -> totalScore
 //
-import { useState, useEffect, useRef } from "react";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 
 export default function FinishPage(props) {
@@ -32,14 +32,19 @@ export default function FinishPage(props) {
       body: JSON.stringify({ ...userData }),
     })
       .then((res) => res.json())
+      // .then((jsonData) => {
+      //   // TODO: Better error handling
+      //   if (!jsonData.isInserted)
+      //     console.log("Insert error: ", jsonData.error);
+      // });
       .then((jsonData) => {
-        // TODO: Better error handling
-        if (!jsonData.isInserted)
-          console.log("InsertIntoDB failed in the backend");
-      });
-
-    // TODO: change isDisplayScoreboard to state in game
-    props.setIsDisplayScoreboardToTrue();
+        // TODO: Is better way for error handling needed ? 
+        let isValid = jsonData.isInserted 
+        console.log(jsonData.error) // If there is no error then jsonData.error === ""
+         
+        // Call the scoreboard info setter wrapper:
+        props.setScoreboardInfo(isValid)
+      })
   }
 
   return (
