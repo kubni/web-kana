@@ -157,12 +157,11 @@ func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request)
 	fmt.Println("userData: ", userData)
 
 	// TODO: Rename CheckIfUsernameAlreadyExists to doesUsernameAlreadyExists
-  var isUsernameValid bool
+	var isUsernameValid bool
 	if userData.Username == "" || gc.model.CheckIfUsernameAlreadyExists(userData.Username) {
-    fmt.Println("Username already exists: ", userData.Username)
+		fmt.Println("Username already exists: ", userData.Username)
 		isUsernameValid = false
 	} else {
-    fmt.Println("Username is okay:", userData.Username)
 		isUsernameValid = true
 	}
 
@@ -181,17 +180,18 @@ func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request)
 	var insertInfo struct {
 		IsInserted bool   `json:"isInserted"`
 		Error      string `json:"error"`
+		StringID   string `json:"stringID"`
 	}
 
 	insertOneResult, err := gc.model.InsertOne(document)
 	if err != nil {
 		log.Println(err)
 		insertInfo.IsInserted = false
-    if !isUsernameValid {
-      insertInfo.Error = "Username already exists"
-    } else {
-      insertInfo.Error = err.Error()
-    }
+		if !isUsernameValid {
+			insertInfo.Error = "Username already exists"
+		} else {
+			insertInfo.Error = err.Error()
+		}
 
 	} else {
 		insertInfo.IsInserted = true
@@ -199,10 +199,10 @@ func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request)
 
 		fmt.Println("Insert result: ", insertOneResult)
 
-		// Decode Id into a string // TODO: Is this needed, ID is always empty in the DB
 		if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
 			gc.data.CurrentPlayerObjectID = id
-			gc.data.CurrentPlayerStringID = id.Hex()
+			// gc.data.CurrentPlayerStringID = id.Hex()                             !!!!
+			insertInfo.StringID = id.Hex()
 		}
 	}
 
@@ -210,6 +210,46 @@ func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request)
 	if err := json.NewEncoder(w).Encode(insertInfo); err != nil {
 		log.Println(err)
 	}
+}
+
+
+func (gc *GameController) CalculatePlayerRank(w http.ResponseWriter, r *http.Request) {
+  fmt.Println("We are in CalculatePlayerRank")
+  
+  var userData struct {
+    CurrentPlayerStringID string `json:"currentPlayerStringID"`
+    CurrentPlayerScore int `json:"currentPlayerScore"`
+  }
+
+  if err := json.NewDecoder(r.Body).Decode(&userData); err != nil {
+		log.Println(err)
+	}
+
+  fmt.Println("userData in CalculatePlayerRank: ", userData)
+
+  // For GetAndSetPlayerRank we need an objectID which has the type primitive.ObjectID.
+  // In order to convert our stringID to ObjectID, we use ObjectIDFromHex
+  currentPlayerObjectID, err := primitive.ObjectIDFromHex(userData.CurrentPlayerStringID)
+  if err != nil {
+    log.Println(err)
+  }
+  
+  currentPlayerRank := gc.model.GetAndSetPlayerRank(currentPlayerObjectID, userData.CurrentPlayerScore)
+
+  fmt.Println("CurrentPlayerRank: ", currentPlayerRank)
+ 
+
+  // TODO: Should we include an error field in the response that encodes err ?
+  httpResponse := struct {
+    CurrentPlayerRank int64 `json:"currentPlayerRank"`
+  } {
+    CurrentPlayerRank: currentPlayerRank,
+  }
+
+  if err := json.NewEncoder(w).Encode(httpResponse); err != nil {
+		log.Println(err)
+	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

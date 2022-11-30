@@ -8,13 +8,6 @@ import { Link } from "react-router-dom";
 export default function FinishPage(props) {
   const ref = useRef();
 
-  // document = bson.M{
-  // 				"ID":       gc.data.CurrentPlayerStringID,
-  // 				"Username": gc.data.CurrentPlayer,
-  // 				"Score":    gc.data.CurrentPlayerScore,
-  // 				"Rank":     gc.data.CurrentPlayerRank,
-  // 			}
-
   function onFormSubmit(event) {
     event.preventDefault();
 
@@ -32,18 +25,15 @@ export default function FinishPage(props) {
       body: JSON.stringify({ ...userData }),
     })
       .then((res) => res.json())
-      // .then((jsonData) => {
-      //   // TODO: Better error handling
-      //   if (!jsonData.isInserted)
-      //     console.log("Insert error: ", jsonData.error);
-      // });
+    
       .then((jsonData) => {
         // TODO: Is better way for error handling needed ? 
-        let isValid = jsonData.isInserted 
+        const isValid = jsonData.isInserted 
+        const stringID = jsonData.stringID
         console.log(jsonData.error) // If there is no error then jsonData.error === ""
          
         // Call the scoreboard info setter wrapper:
-        props.setScoreboardInfo(isValid)
+        props.setScoreboardInfo(isValid, stringID)
       })
   }
 

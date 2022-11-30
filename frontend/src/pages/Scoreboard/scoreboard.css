@@ -1,3 +1,9 @@
+.scoreboard-page {
+  display: flex;
+  flex-direction: column;
+}
+
+
 .scoreboard-table {
   border-collapse: collapse;
   margin: 25px 0;

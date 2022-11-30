@@ -15,6 +15,7 @@ export default function GamePage(props) {
   const [scoreboardInfo, setScoreboardInfo] = useState({
     isDisplayScoreboard: false,
     isUsernameValid: false,
+    currentPlayerStringID: "",
   })
 
 
@@ -48,20 +49,22 @@ export default function GamePage(props) {
           currentPlayerScore = {currentPlayerScore}
           chosenAlphabet = {props.chosenAlphabet}
           scoreboardInfo = {{...scoreboardInfo}}
-          setScoreboardInfo = {(isValid) => setScoreboardInfo({
+          setScoreboardInfo = {(isValid, stringID) => setScoreboardInfo({
             isDisplayScoreboard: true,
-            isUsernameValid: isValid
+            isUsernameValid: isValid,
+            currentPlayerStringID: stringID
           })}
 
         />
       }
       {isFinished && scoreboardInfo.isDisplayScoreboard && scoreboardInfo.isUsernameValid && (
         <Scoreboard
+          currentPlayerScore = {currentPlayerScore}
+          currentPlayerStringID = {scoreboardInfo.currentPlayerStringID}
           scoreboard={[
             { ID: "1", rank: 1, username: "test", score: "4" },
             { ID: "2", rank: 2, username: "test2", score: "2" },
           ]}
-          currentPlayerStringID="1"
           currentPage={0}
         />
       )}
@@ -74,9 +77,10 @@ export default function GamePage(props) {
             currentPlayerScore = {currentPlayerScore}
             chosenAlphabet = {props.chosenAlphabet}
             scoreboardInfo = {{...scoreboardInfo}}
-            setScoreboardInfo = {(isValid) => setScoreboardInfo({
+            setScoreboardInfo = {(isValid, stringObjectID) => setScoreboardInfo({
               isDisplayScoreboard: true,
-              isUsernameValid: isValid
+              isUsernameValid: isValid,
+              currentPlayerStringObjectID: stringObjectID
             })}
            
           />
