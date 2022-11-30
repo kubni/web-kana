@@ -1,4 +1,26 @@
+.finish-page {
+  display: flex;
+  flex-direction: column;
+  gap: 5rem;
+}
+
+
 .go-back-button {
   color: var(--clr-game-primary);
   font-weight: bold;
+  padding: 1rem;
+  cursor: pointer;
+  border-radius: 10px;
+  box-shadow: 5px 5px rgba(0, 0, 0, 30%);
+  border: none;
+  background-color: #e6e6e6;
 }
+
+.go-back-button:hover {
+  border: solid 1.5px var(--clr-game-primary);
+}
+
+.username-input {
+  padding: 0.25rem; 
+}
+

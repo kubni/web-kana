@@ -39,6 +39,7 @@ export default function GamePage(props) {
       {isFinished && !props.isDisplayScoreboard &&
         <FinishPage 
           currentPlayerScore = {currentPlayerScore}
+          chosenAlphabet = {props.chosenAlphabet}
         />
       }
       {isFinished && props.isDisplayScoreboard && props.isUsernameValid && (
@@ -56,7 +57,10 @@ export default function GamePage(props) {
           <p className="invalid-username-msg">
             The username you entered already exists! Please, choose another one.
           </p>
-          <FinishPage />
+          <FinishPage
+            currentPlayerScore = {currentPlayerScore}
+            chosenAlphabet = {props.chosenAlphabet}
+          />
         </>
       )}
     </div>
