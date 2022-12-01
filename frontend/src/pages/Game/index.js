@@ -64,7 +64,6 @@ export default function GamePage(props) {
           <Scoreboard
             currentPlayerStringID={scoreboardInfo.currentPlayerStringID}
             currentPlayerScore={currentPlayerScore}
-            currentPage={0}
           />
         )}
       {isFinished &&

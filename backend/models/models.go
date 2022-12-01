@@ -114,6 +114,7 @@ func (m *Model) UpdateOtherRanks(currentPlayerObjectID primitive.ObjectID, curre
 // Index for username?
 // TODO: Should i move this to templates.go? But then i would have to import all those packages that are needed for this functions there.
 func (m *Model) CheckIfUsernameAlreadyExists(providedUsername string) bool {
+  fmt.Println("We are in CheckIfUsernameAlreadyExists")
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 

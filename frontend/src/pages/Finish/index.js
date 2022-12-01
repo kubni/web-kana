@@ -25,9 +25,8 @@ export default function FinishPage(props) {
       body: JSON.stringify({ ...userData }),
     })
       .then((res) => res.json())
-
       .then((jsonData) => {
-        // TODO: Is better way for error handling needed ?
+        console.log("jsonData.isInserted", jsonData.isInserted)
         const isValid = jsonData.isInserted;
         const stringID = jsonData.stringID;
         console.log(jsonData.error); // If there is no error then jsonData.error === ""

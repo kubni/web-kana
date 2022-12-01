@@ -18,6 +18,7 @@ export default function Scoreboard(props) {
   }); // TODO: Remove currentPage from props in Game
 
   // TODO: Add AbortController and a cleanup function to both useEffects !!!
+  const calculatePlayerRankAbortController = new AbortController();
   useEffect(() => {
     const userData = {
       currentPlayerStringID: props.currentPlayerStringID,
@@ -25,6 +26,7 @@ export default function Scoreboard(props) {
     };
 
     fetch("http://localhost:8000/game/calculatePlayerRank", {
+      signal: calculatePlayerRankAbortController.signal,
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -33,29 +35,55 @@ export default function Scoreboard(props) {
     })
       .then((res) => res.json())
       .then((jsonData) => setCurrentPlayerRank(jsonData.currentPlayerRank));
+
+    // Cleanup
+    return () => {
+      calculatePlayerRankAbortController.abort();
+    };
   }, [props.currentPlayerStringID, props.currentPlayerScore]);
 
+  // CHECK: Sometimes getScoreboard gets called before -
 
-  // Here we write a useEffect that will POST the scoreboard for the current page 
+  const getScoreboardAbortController = new AbortController();
   useEffect(() => {
-    
     fetch("http://localhost:8000/game/getScoreboard", {
+      signal: getScoreboardAbortController.signal,
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({currentPage: paginationData.currentPage})
+      body: JSON.stringify({ currentPage: paginationData.currentPage }),
     })
-      .then(res => res.json())
-      .then(jsonData => setPaginationData({
-        ...paginationData, 
-        scoreboard: jsonData.scoreboard,
-        numOfPages: jsonData.numOfPages
-      }))
-  }, [paginationData.currentPage]) 
+      .then((res) => res.json())
+      .then((jsonData) =>
+        setPaginationData(() => {
+          return {
+            ...paginationData,
+            scoreboard: jsonData.scoreboard,
+            numOfPages: jsonData.numOfPages,
+          };
+        })
+      );
 
+    // Cleanup
+    return () => {
+      getScoreboardAbortController.abort();
+    };
+  }, [paginationData.currentPage, currentPlayerRank]);
 
-  // TODO: onPageChange  -> currentPage + 1
+  function handlePreviousPageButtonClick() {
+    setPaginationData({
+      ...paginationData,
+      currentPage: paginationData.currentPage - 1,
+    });
+  }
+
+  function handleNextPageButtonClick() {
+    setPaginationData({
+      ...paginationData,
+      currentPage: paginationData.currentPage + 1,
+    });
+  }
 
   return (
     <div className="scoreboard-page">
@@ -91,9 +119,23 @@ export default function Scoreboard(props) {
       </table>
 
       <div className="pagination-buttons">
-        {props.currentPage !== 0 && <form></form>}
+        {paginationData.currentPage !== 0 && (
+          <button
+            className="previous-page-button"
+            onClick={handlePreviousPageButtonClick}
+          >
+            Previous Page
+          </button>
+        )}
 
-        {props.currentPage + 1 < props.numberOfPages && <form></form>}
+        {paginationData.currentPage < paginationData.numOfPages && (
+          <button
+            className="next-page-button"
+            onClick={handleNextPageButtonClick}
+          >
+            Next Page
+          </button>
+        )}
       </div>
 
       <h3>Page {paginationData.currentPage + 1}</h3>

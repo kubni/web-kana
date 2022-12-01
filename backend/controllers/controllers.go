@@ -134,28 +134,29 @@ func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request)
 		StringID   string `json:"stringID"`
 	}
 
-	insertOneResult, err := gc.model.InsertOne(document)
-	if err != nil {
-		log.Println(err)
-		insertInfo.IsInserted = false
-		if !isUsernameValid {
-			insertInfo.Error = "Username already exists"
-		} else {
-			insertInfo.Error = err.Error()
-		}
 
-	} else {
-		insertInfo.IsInserted = true
-		insertInfo.Error = ""
+  if isUsernameValid {
+    insertOneResult, err := gc.model.InsertOne(document)
+    if err != nil {
+      log.Println(err)
+      insertInfo.IsInserted = false
+      insertInfo.Error = err.Error() 
+    } else {
+      insertInfo.IsInserted = true
+      insertInfo.Error = ""
 
-		fmt.Println("Insert result: ", insertOneResult)
+      fmt.Println("Insert result: ", insertOneResult)
 
-		if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
-			gc.data.CurrentPlayerObjectID = id
-			// gc.data.CurrentPlayerStringID = id.Hex()                             !!!!
-			insertInfo.StringID = id.Hex()
-		}
-	}
+      if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
+        gc.data.CurrentPlayerObjectID = id
+        // gc.data.CurrentPlayerStringID = id.Hex()                             !!!!
+        insertInfo.StringID = id.Hex()
+      }
+    }
+  } else {
+    insertInfo.IsInserted = false 
+    insertInfo.Error = "Username already exists"
+  }
 
 	// We need to actually send a json response about the insert action status
 	if err := json.NewEncoder(w).Encode(insertInfo); err != nil {
@@ -187,7 +188,6 @@ func (gc *GameController) CalculatePlayerRank(w http.ResponseWriter, r *http.Req
   
   currentPlayerRank := gc.model.GetAndSetPlayerRank(currentPlayerObjectID, userData.CurrentPlayerScore)
   fmt.Println("CurrentPlayerRank: ", currentPlayerRank)
-
 
   // Now we need to update other player ranks:
 	gc.model.UpdateOtherRanks(currentPlayerObjectID, userData.CurrentPlayerScore)
@@ -225,6 +225,7 @@ func (gc *GameController) GetScoreboard(w http.ResponseWriter, r *http.Request) 
   */
   scoreboard, numOfPages := gc.model.GetScoreboard(requestData.CurrentPage)
 
+  fmt.Println("Scoreboard: ", scoreboard)
 
   responseData := struct {
     Scoreboard []models.DocumentSchema `json:"scoreboard"`
