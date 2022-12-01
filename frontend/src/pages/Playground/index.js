@@ -1,4 +1,7 @@
 // TODO: For some reason there is an Uncaught promise DOMException on this page, even though everything seems to work.
+//
+//
+// FIXME: If there is no input and only Enter is pressed, the correct answer message will appear like it should, but character won't change
 
 import "./playground.css";
 import React, { useState, useEffect, useRef } from "react";
@@ -21,10 +24,10 @@ export default function Playground(props) {
   });
 
   // AbortController for useEffect fetch cleanup
-  const fetchHiraganaAbortController = new AbortController(); // TODO: Can 1 AbortController monitor more than 1 fetch request
-  const fetchKatakanaAbortController = new AbortController();
   useEffect(() => {
-    console.log("We are in useEffect")
+    const fetchHiraganaAbortController = new AbortController(); // TODO: Can 1 AbortController monitor more than 1 fetch request
+    const fetchKatakanaAbortController = new AbortController();
+
     if (chosenAlphabet === "hiragana") {
       fetch("http://localhost:8000/game/generateHiraganaCharacter", {
         signal: fetchHiraganaAbortController.signal,
@@ -48,11 +51,9 @@ export default function Playground(props) {
   console.log("Target Character: ", targetCharacter);
 
   function onAnswerFormSubmit(event) {
-    console.log("We are in onAnswerformSubmit")
     event.preventDefault();
     const userAnswer = ref.current.value;
     ref.current.value = "";
-
 
     fetch("http://localhost:8000/game/checkAnswer", {
       method: "POST",
@@ -66,36 +67,32 @@ export default function Playground(props) {
     })
       .then((res) => res.json())
       .then((jsonData) => {
-        if(jsonData.isAnswerCorrect === true)
-        {
-          /* 
-            * Important: Two setStates happen here, but React is using batching probably so there are no rerenders 
-            * between them
-          */ 
+        if (jsonData.isAnswerCorrect === true) {
+          /*
+           * Important: Two setStates happen here, but React is using batching probably so there are no rerenders
+           * between them
+           */
           setPlaygroundInfo({
-              userAnswer: userAnswer,
-              isAnswerCorrect: true,
-              correctAnswerRomaji: jsonData.correctAnswerRomaji,
-            });
+            userAnswer: userAnswer,
+            isAnswerCorrect: true,
+            correctAnswerRomaji: jsonData.correctAnswerRomaji,
+          });
           props.changeCurrentPlayerScoreBy(1);
-        }
-        else  
-        {
+        } else {
           setPlaygroundInfo({
-              userAnswer: userAnswer,
-              isAnswerCorrect: false,
-              correctAnswerRomaji: jsonData.correctAnswerRomaji,
+            userAnswer: userAnswer,
+            isAnswerCorrect: false,
+            correctAnswerRomaji: jsonData.correctAnswerRomaji,
           });
           props.changeCurrentPlayerScoreBy(-1);
         }
-      })
+      });
   }
   console.log("Is answer correct: ", playgroundInfo.isAnswerCorrect);
 
-
-  function onFinishGameFormSubmit (event) {
-    event.preventDefault()
-    props.finishGame()
+  function onFinishGameFormSubmit(event) {
+    event.preventDefault();
+    props.finishGame();
   }
 
   return (
@@ -110,9 +107,8 @@ export default function Playground(props) {
 
       <div className="result-info">
         <h2>
-          Current score: <span className="total-score">
-            {props.currentPlayerScore}
-          </span>
+          Current score:{" "}
+          <span className="total-score">{props.currentPlayerScore}</span>
         </h2>
         {!playgroundInfo.isAnswerCorrect && (
           <h3 className="result-message">

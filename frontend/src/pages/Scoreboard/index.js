@@ -18,8 +18,9 @@ export default function Scoreboard(props) {
   }); // TODO: Remove currentPage from props in Game
 
   // TODO: Add AbortController and a cleanup function to both useEffects !!!
-  const calculatePlayerRankAbortController = new AbortController();
   useEffect(() => {
+    const calculatePlayerRankAbortController = new AbortController();
+
     const userData = {
       currentPlayerStringID: props.currentPlayerStringID,
       currentPlayerScore: props.currentPlayerScore,
@@ -44,8 +45,9 @@ export default function Scoreboard(props) {
 
   // CHECK: Sometimes getScoreboard gets called before -
 
-  const getScoreboardAbortController = new AbortController();
   useEffect(() => {
+    const getScoreboardAbortController = new AbortController();
+
     fetch("http://localhost:8000/game/getScoreboard", {
       signal: getScoreboardAbortController.signal,
       method: "POST",
@@ -128,7 +130,7 @@ export default function Scoreboard(props) {
           </button>
         )}
 
-        {paginationData.currentPage < paginationData.numOfPages && (
+        {paginationData.currentPage + 1 < paginationData.numOfPages && (
           <button
             className="next-page-button"
             onClick={handleNextPageButtonClick}
