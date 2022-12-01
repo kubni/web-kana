@@ -20,26 +20,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// type TemplateData struct {
-// 	ChosenAlphabet        string
-// 	PageTitle             string
-// 	Character             string
-// 	ResultMessage         string
-// 	CorrectAnswer         string
-// 	IsFinished            string
-// 	CurrentPlayer         string
-// 	CurrentPlayerObjectID primitive.ObjectID
-// 	CurrentPlayerStringID string // For comparison in layout_game.html
-// 	CurrentPlayerRank     int64
-// 	CurrentPlayerScore    int
-// 	IsUsernameValid       string
-// 	DisplayScoreboard     string
-// 	Scoreboard            []models.DocumentSchema
-// 	CurrentPage           int
-// 	NumOfPages            int
-// 	MessageForUser        string
-// 	IsPlayAgainTrue       string
-// }
 
 type UserData struct {
 	CurrentPlayerObjectID primitive.ObjectID
@@ -52,35 +32,6 @@ type GameController struct {
 	model               *models.Model
 	chosenAlphabetTable map[string][]string
 }
-
-// func NewGameController(ctx context.Context, client *mongo.Client) *GameController {
-// 	var gc GameController
-//
-// 	gc.data = TemplateData{
-// 		ChosenAlphabet:        "",
-// 		PageTitle:             "",
-// 		Character:             "",
-// 		ResultMessage:         "",
-// 		CorrectAnswer:         "",
-// 		IsFinished:            "false",
-// 		CurrentPlayer:         "",
-// 		CurrentPlayerStringID: "",
-// 		CurrentPlayerRank:     0,
-// 		CurrentPlayerScore:    0,
-// 		IsUsernameValid:       "false",
-// 		DisplayScoreboard:     "false",
-// 		Scoreboard:            []models.DocumentSchema{},
-// 		CurrentPage:           0,
-// 		NumOfPages:            1,
-// 		MessageForUser:        "",
-// 		IsPlayAgainTrue:       "false",
-// 	}
-//
-// 	gc.model = models.NewModel(client, "testdb", "scoreboard3")
-// 	gc.chosenAlphabetTable = make(map[string][]string)
-//
-// 	return &gc
-// }
 
 func NewGameController(ctx context.Context, client *mongo.Client) *GameController {
 	var gc GameController
@@ -235,11 +186,13 @@ func (gc *GameController) CalculatePlayerRank(w http.ResponseWriter, r *http.Req
   }
   
   currentPlayerRank := gc.model.GetAndSetPlayerRank(currentPlayerObjectID, userData.CurrentPlayerScore)
-
   fmt.Println("CurrentPlayerRank: ", currentPlayerRank)
- 
 
-  // TODO: Should we include an error field in the response that encodes err ?
+
+  // Now we need to update other player ranks:
+	gc.model.UpdateOtherRanks(currentPlayerObjectID, userData.CurrentPlayerScore)
+
+  // TODO: Should we include an error field in the response that encodes err ?            !!!
   httpResponse := struct {
     CurrentPlayerRank int64 `json:"currentPlayerRank"`
   } {
@@ -251,6 +204,41 @@ func (gc *GameController) CalculatePlayerRank(w http.ResponseWriter, r *http.Req
 	}
 
 }
+
+func (gc *GameController) GetScoreboard(w http.ResponseWriter, r *http.Request) {
+  var requestData struct {
+    CurrentPage int `json:"currentPage"`
+  }
+
+  if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+    log.Println("CurrentPageError: ", err)
+	}
+
+  // GetScoreboard returns []models.DocumentSchema which is the following:
+  /*
+    type DocumentSchema struct {
+	    ID       string `bson:"_id, omitempty"`
+	    Username string 
+	    Score    int
+	    Rank     int
+    }
+  */
+  scoreboard, numOfPages := gc.model.GetScoreboard(requestData.CurrentPage)
+
+
+  responseData := struct {
+    Scoreboard []models.DocumentSchema `json:"scoreboard"`
+    NumOfPages int `json:"numOfPages"`
+  } {
+    Scoreboard: scoreboard, 
+    NumOfPages: numOfPages,
+  }
+
+  if err := json.NewEncoder(w).Encode(responseData); err != nil {
+		log.Println(err)
+	}
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 

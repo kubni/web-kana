@@ -25,16 +25,21 @@ export default function FinishPage(props) {
       body: JSON.stringify({ ...userData }),
     })
       .then((res) => res.json())
-    
+
       .then((jsonData) => {
-        // TODO: Is better way for error handling needed ? 
-        const isValid = jsonData.isInserted 
-        const stringID = jsonData.stringID
-        console.log(jsonData.error) // If there is no error then jsonData.error === ""
-         
+        // TODO: Is better way for error handling needed ?
+        const isValid = jsonData.isInserted;
+        const stringID = jsonData.stringID;
+        console.log(jsonData.error); // If there is no error then jsonData.error === ""
+
         // Call the scoreboard info setter wrapper:
-        props.setScoreboardInfo(isValid, stringID)
-      })
+        props.setScoreboardInfo(
+          isValid,
+          stringID,
+          userData.username,
+          userData.score
+        );
+      });
   }
 
   return (
