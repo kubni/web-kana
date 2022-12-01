@@ -44,7 +44,16 @@
 
 .pagination-buttons {
   display: flex;
+  justify-content: center;
   gap: 10px;
+}
+
+.previous-page-button, .next-page-button {
+  padding: 1rem;
+}
+
+.previous-page-button:hover, .next-page-button:hover {
+  background-color: var(--clr-game-primary);
 }
 
 .player-rank {

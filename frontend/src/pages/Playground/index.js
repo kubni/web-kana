@@ -54,15 +54,6 @@ export default function Playground(props) {
   function onAnswerFormSubmit(event) {
     event.preventDefault();
 
-    // Answer validation: the answer can't be ""
-    // FIXME: This doesn't work as intended
-    // if (ref.current.value === "") {
-    //   setPlaygroundInfo({
-    //     ...playgroundInfo,
-    //     wrongAnswerMessage: "Error: You must type something!",
-    //   });
-    // }
-
     const userAnswer = ref.current.value;
     ref.current.value = "";
 
@@ -88,7 +79,7 @@ export default function Playground(props) {
             userAnswer: userAnswer,
             isAnswerCorrect: true,
             correctAnswerRomaji: jsonData.correctAnswerRomaji,
-           });
+          });
           props.changeCurrentPlayerScoreBy(1);
         } else {
           setPlaygroundInfo({
@@ -96,7 +87,10 @@ export default function Playground(props) {
             isAnswerCorrect: false,
             correctAnswerRomaji: jsonData.correctAnswerRomaji,
             displayCorrectAnswerRomaji: userAnswer === "" ? false : true,
-            wrongAnswerMessage: userAnswer === "" ? "Error: You must type something!" : "Wrong, the correct answer was "
+            wrongAnswerMessage:
+              userAnswer === ""
+                ? "Error: You must type something!"
+                : "Wrong, the correct answer was ",
           });
           props.changeCurrentPlayerScoreBy(-1);
         }
