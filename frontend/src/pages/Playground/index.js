@@ -7,7 +7,6 @@ import "./playground.css";
 import React, { useState, useEffect, useRef } from "react";
 
 export default function Playground(props) {
-  // console.log(props)
   const chosenAlphabet = props.chosenAlphabet;
 
   // Refs:
@@ -15,7 +14,6 @@ export default function Playground(props) {
 
   // States:
   const [targetCharacter, setTargetCharacter] = useState("");
-
   const [playgroundInfo, setPlaygroundInfo] = useState({
     userAnswer: "",
     isAnswerCorrect: true,

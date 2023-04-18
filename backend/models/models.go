@@ -89,8 +89,10 @@ func (m *Model) GetAndSetPlayerRank(currentPlayerObjectID primitive.ObjectID, cu
 }
 
 /*
-	We must update the ranks of the players that are now lower in rank compared to the currently added player
-	We can do that by comparing their scores.
+We must update the ranks of the players that are now lower in rank compared to the currently added player
+We can do that by comparing their scores.
+
+	// FIXME:
 */
 func (m *Model) UpdateOtherRanks(currentPlayerObjectID primitive.ObjectID, currentPlayerScore int) {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
@@ -114,7 +116,7 @@ func (m *Model) UpdateOtherRanks(currentPlayerObjectID primitive.ObjectID, curre
 // Index for username?
 // TODO: Should i move this to templates.go? But then i would have to import all those packages that are needed for this functions there.
 func (m *Model) CheckIfUsernameAlreadyExists(providedUsername string) bool {
-  fmt.Println("We are in CheckIfUsernameAlreadyExists")
+	fmt.Println("We are in CheckIfUsernameAlreadyExists")
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
@@ -137,11 +139,14 @@ func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
 	return int(numOfPages)
 }
 
-/* This function always returns a slice of 10 players  for the currentPage (which is provided in the call to GetScoreboard in the controller)
-   The currentPage is updated after NextPage/PreviousPage buttons are clicked and then we have new Post request which again calls this func.
-   for the next/previous 10 (or whatever we set playersPerPage to) players.
-*/
+/*
+This function always returns a slice of 10 players  for the currentPage (which is provided in the call to GetScoreboard in the controller)
 
+	The currentPage is updated after NextPage/PreviousPage buttons are clicked and then we have new Post request which again calls this func.
+	for the next/previous 10 (or whatever we set playersPerPage to) players.
+
+	// FIXME: The last player on the scoreboard page is shown on the next one as first one too.
+*/
 func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
 	// Sort by rank
@@ -175,7 +180,7 @@ func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 
 		   TODO: A more efficient way
 		*/
-		if j < playersPerPage*currentPage {
+		if j <= playersPerPage*currentPage {
 			j++
 			continue
 		}

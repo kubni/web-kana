@@ -1,3 +1,17 @@
+/* FIXME:
+ * 1) 10th ranked player is shown on the 2nd page again, when it shouldn't be so.
+ * 2) After switching first and pages back and forth, SOMETIMES (??) rankings under the currrent one get messed up. // IMPORTANT
+ *    // It might be a backend problem?
+ *    // How it works:
+ *        1) The fetch request to /game/calculatePlayerRank calls the controller.CalculatePlayerRank from the backend
+ *           // Maybe the rerender happens and calls it multiple times, because we have props.currentPlayerScore in dep. array,
+ *              and CalculatePlayerScore in backend is changing
+ *
+ *
+ * */
+
+
+
 import "./scoreboard.css";
 
 import { useState, useEffect } from "react";
@@ -26,6 +40,10 @@ export default function Scoreboard(props) {
       currentPlayerScore: props.currentPlayerScore,
     };
 
+
+
+    console.log("Fetching to /game/calculatePlayerRank...");
+
     fetch("http://localhost:8000/game/calculatePlayerRank", {
       signal: calculatePlayerRankAbortController.signal,
       method: "POST",
@@ -45,6 +63,10 @@ export default function Scoreboard(props) {
 
   // CHECK: Sometimes getScoreboard gets called before -
 
+
+
+  // FIXME: Last player on each page is shown as first on the next one too.
+  // // This might be a backend problem
   useEffect(() => {
     const getScoreboardAbortController = new AbortController();
 

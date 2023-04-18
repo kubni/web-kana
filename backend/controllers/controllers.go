@@ -13,13 +13,11 @@ import (
 	"web_kana_v1/kana/kana_logic"
 	"web_kana_v1/kana/tables"
 	"web_kana_v1/models"
-	// "web_kana_v1/templates"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
 
 type UserData struct {
 	CurrentPlayerObjectID primitive.ObjectID
@@ -94,7 +92,7 @@ func GenerateKatakanaCharacter(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// TODO: Decompsoe this function
+// TODO: Decompose this function
 func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request) {
 	var userData struct {
 		Username string `json:"username"`
@@ -134,29 +132,28 @@ func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request)
 		StringID   string `json:"stringID"`
 	}
 
+	if isUsernameValid {
+		insertOneResult, err := gc.model.InsertOne(document)
+		if err != nil {
+			log.Println(err)
+			insertInfo.IsInserted = false
+			insertInfo.Error = err.Error()
+		} else {
+			insertInfo.IsInserted = true
+			insertInfo.Error = ""
 
-  if isUsernameValid {
-    insertOneResult, err := gc.model.InsertOne(document)
-    if err != nil {
-      log.Println(err)
-      insertInfo.IsInserted = false
-      insertInfo.Error = err.Error() 
-    } else {
-      insertInfo.IsInserted = true
-      insertInfo.Error = ""
+			fmt.Println("Insert result: ", insertOneResult)
 
-      fmt.Println("Insert result: ", insertOneResult)
-
-      if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
-        gc.data.CurrentPlayerObjectID = id
-        // gc.data.CurrentPlayerStringID = id.Hex()                             !!!!
-        insertInfo.StringID = id.Hex()
-      }
-    }
-  } else {
-    insertInfo.IsInserted = false 
-    insertInfo.Error = "Username already exists"
-  }
+			if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
+				gc.data.CurrentPlayerObjectID = id
+				// gc.data.CurrentPlayerStringID = id.Hex()                             !!!!
+				insertInfo.StringID = id.Hex()
+			}
+		}
+	} else {
+		insertInfo.IsInserted = false
+		insertInfo.Error = "Username already exists"
+	}
 
 	// We need to actually send a json response about the insert action status
 	if err := json.NewEncoder(w).Encode(insertInfo); err != nil {
@@ -164,82 +161,81 @@ func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-
 func (gc *GameController) CalculatePlayerRank(w http.ResponseWriter, r *http.Request) {
-  fmt.Println("We are in CalculatePlayerRank")
-  
-  var userData struct {
-    CurrentPlayerStringID string `json:"currentPlayerStringID"`
-    CurrentPlayerScore int `json:"currentPlayerScore"`
-  }
+	fmt.Println("We are in CalculatePlayerRank")
 
-  if err := json.NewDecoder(r.Body).Decode(&userData); err != nil {
+	var userData struct {
+		CurrentPlayerStringID string `json:"currentPlayerStringID"`
+		CurrentPlayerScore    int    `json:"currentPlayerScore"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&userData); err != nil {
 		log.Println(err)
 	}
 
-  fmt.Println("userData in CalculatePlayerRank: ", userData)
+	fmt.Println("userData in CalculatePlayerRank: ", userData)
 
-  // For GetAndSetPlayerRank we need an objectID which has the type primitive.ObjectID.
-  // In order to convert our stringID to ObjectID, we use ObjectIDFromHex
-  currentPlayerObjectID, err := primitive.ObjectIDFromHex(userData.CurrentPlayerStringID)
-  if err != nil {
-    log.Println(err)
-  }
-  
-  currentPlayerRank := gc.model.GetAndSetPlayerRank(currentPlayerObjectID, userData.CurrentPlayerScore)
-  fmt.Println("CurrentPlayerRank: ", currentPlayerRank)
+	// For GetAndSetPlayerRank we need an objectID which has the type primitive.ObjectID.
+	// In order to convert our stringID to ObjectID, we use ObjectIDFromHex
+	currentPlayerObjectID, err := primitive.ObjectIDFromHex(userData.CurrentPlayerStringID)
+	if err != nil {
+		log.Println(err)
+	}
 
-  // Now we need to update other player ranks:
+	// TODO: Check if this is triggering a re-render in the frontend (since at first the rank is 0 and then we set it here, meanwhile currentPlayerScore is in the dependency array of that useEffect)
+	currentPlayerRank := gc.model.GetAndSetPlayerRank(currentPlayerObjectID, userData.CurrentPlayerScore)
+	fmt.Println("CurrentPlayerRank: ", currentPlayerRank)
+
+	// Now we need to update other player ranks:
 	gc.model.UpdateOtherRanks(currentPlayerObjectID, userData.CurrentPlayerScore)
 
-  // TODO: Should we include an error field in the response that encodes err ?            !!!
-  httpResponse := struct {
-    CurrentPlayerRank int64 `json:"currentPlayerRank"`
-  } {
-    CurrentPlayerRank: currentPlayerRank,
-  }
+	// TODO: Should we include an error field in the response that encodes err ?            !!!
+	httpResponse := struct {
+		CurrentPlayerRank int64 `json:"currentPlayerRank"`
+	}{
+		CurrentPlayerRank: currentPlayerRank,
+	}
 
-  if err := json.NewEncoder(w).Encode(httpResponse); err != nil {
+	if err := json.NewEncoder(w).Encode(httpResponse); err != nil {
 		log.Println(err)
 	}
 
 }
 
 func (gc *GameController) GetScoreboard(w http.ResponseWriter, r *http.Request) {
-  var requestData struct {
-    CurrentPage int `json:"currentPage"`
-  }
-
-  if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
-    log.Println("CurrentPageError: ", err)
+	var requestData struct {
+		CurrentPage int `json:"currentPage"`
 	}
 
-  // GetScoreboard returns []models.DocumentSchema which is the following:
-  /*
-    type DocumentSchema struct {
-	    ID       string `bson:"_id, omitempty"`
-	    Username string 
-	    Score    int
-	    Rank     int
-    }
-  */
-  scoreboard, numOfPages := gc.model.GetScoreboard(requestData.CurrentPage)
+	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+		log.Println("CurrentPageError: ", err)
+	}
 
-  fmt.Println("Scoreboard: ", scoreboard)
+	// GetScoreboard returns []models.DocumentSchema which is the following:
+	/*
+		    type DocumentSchema struct {
+			    ID       string `bson:"_id, omitempty"`
+			    Username string
+			    Score    int
+			    Rank     int
+		    }
+	*/
+	scoreboard, numOfPages := gc.model.GetScoreboard(requestData.CurrentPage)
 
-  responseData := struct {
-    Scoreboard []models.DocumentSchema `json:"scoreboard"`
-    NumOfPages int `json:"numOfPages"`
-  } {
-    Scoreboard: scoreboard, 
-    NumOfPages: numOfPages,
-  }
+	fmt.Println("Scoreboard: ", scoreboard)
 
-  if err := json.NewEncoder(w).Encode(responseData); err != nil {
+	responseData := struct {
+		Scoreboard []models.DocumentSchema `json:"scoreboard"`
+		NumOfPages int                     `json:"numOfPages"`
+	}{
+		Scoreboard: scoreboard,
+		NumOfPages: numOfPages,
+	}
+
+	if err := json.NewEncoder(w).Encode(responseData); err != nil {
 		log.Println(err)
 	}
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////
 
