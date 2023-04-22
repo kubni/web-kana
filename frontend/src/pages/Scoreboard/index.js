@@ -61,12 +61,6 @@ export default function Scoreboard(props) {
     };
   }, [props.currentPlayerStringID, props.currentPlayerScore]);
 
-  // CHECK: Sometimes getScoreboard gets called before -
-
-
-
-  // FIXME: Last player on each page is shown as first on the next one too.
-  // // This might be a backend problem
   useEffect(() => {
     const getScoreboardAbortController = new AbortController();
 
@@ -125,7 +119,6 @@ export default function Scoreboard(props) {
         </thead>
         <tbody>
           {paginationData.scoreboard.map((player) => {
-            // console.log("Player: ", player)
             return (
               <tr
                 key={player.ID}

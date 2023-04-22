@@ -49,7 +49,7 @@ export default function FinishPage(props) {
       </h2>
 
       <div className="play-again-button">
-        <Link to={`/game/${props.chosenAlphabet}`} className="go-back-button">
+        <Link to="/" className="go-back-button">
           Play Again
         </Link>
       </div>
