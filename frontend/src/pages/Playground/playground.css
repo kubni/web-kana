@@ -17,3 +17,10 @@
 .correct-answer {
   color: var(--clr-game-secondary);
 }
+
+/* Phones */
+@media screen and (max-width: 450px) {
+  .playground {
+    margin: auto;
+  }
+}

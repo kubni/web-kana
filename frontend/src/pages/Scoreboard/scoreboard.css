@@ -59,3 +59,12 @@
 .player-rank {
   color: var(--clr-game-secondary);
 }
+
+
+/* Phones */
+
+@media screen and (max-width: 450px) {
+  .scoreboard-table {
+    min-width: calc(min(400px, 90vw));
+  }
+}
