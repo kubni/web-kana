@@ -31,7 +31,6 @@ func NewModel(client *mongo.Client, dbName string, collectionName string) *Model
 	}
 }
 
-// TODO: Is this needed when we can use default collection.InsertOne and InsertMany?
 func (m *Model) InsertOne(doc interface{}) (*mongo.InsertOneResult, error) {
 	// We grab the specified collection
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
@@ -91,8 +90,6 @@ func (m *Model) GetAndSetPlayerRank(currentPlayerObjectID primitive.ObjectID, cu
 /*
 We must update the ranks of the players that are now lower in rank compared to the currently added player
 We can do that by comparing their scores.
-
-	// FIXME:
 */
 func (m *Model) UpdateOtherRanks(currentPlayerObjectID primitive.ObjectID, currentPlayerScore int) {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
@@ -114,7 +111,6 @@ func (m *Model) UpdateOtherRanks(currentPlayerObjectID primitive.ObjectID, curre
 }
 
 // Index for username?
-// TODO: Should i move this to templates.go? But then i would have to import all those packages that are needed for this functions there.
 func (m *Model) CheckIfUsernameAlreadyExists(providedUsername string) bool {
 	fmt.Println("We are in CheckIfUsernameAlreadyExists")
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)
@@ -122,7 +118,6 @@ func (m *Model) CheckIfUsernameAlreadyExists(providedUsername string) bool {
 
 	filter := bson.M{"Username": bson.M{"$eq": providedUsername}}
 	result := collection.FindOne(ctx, filter)
-	// fmt.Println("Println result.Err() usernametest: ", result.Err().Error()) // This produces 2 goroutine panics regarding memory
 
 	if result.Err() == mongo.ErrNoDocuments {
 		return false
@@ -142,10 +137,8 @@ func (m *Model) CalculateNumberOfPages(playersPerPage int) int {
 /*
 This function always returns a slice of 10 players  for the currentPage (which is provided in the call to GetScoreboard in the controller)
 
-	The currentPage is updated after NextPage/PreviousPage buttons are clicked and then we have new Post request which again calls this func.
-	for the next/previous 10 (or whatever we set playersPerPage to) players.
-
-	// FIXME: The last player on the scoreboard page is shown on the next one as first one too.
+The currentPage is updated after NextPage/PreviousPage buttons are clicked and then we have new Post request which again calls this func.
+for the next/previous 10 (or whatever we set playersPerPage to) players.
 */
 func (m *Model) GetScoreboard(currentPage int) ([]DocumentSchema, int) {
 	collection := dbLogic.GetCollection(m.client, m.dbName, m.collectionName)

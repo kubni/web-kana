@@ -42,7 +42,6 @@ func NewGameController(ctx context.Context, client *mongo.Client) *GameControlle
 
 // These should maybe go into API package
 // However, they are still related to the gameplay
-
 func CheckAnswer(w http.ResponseWriter, r *http.Request) {
 	var requestData struct {
 		UserAnswer             string `json:"userAnswer"`
@@ -146,7 +145,6 @@ func (gc *GameController) HandleUserData(w http.ResponseWriter, r *http.Request)
 
 			if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
 				gc.data.CurrentPlayerObjectID = id
-				// gc.data.CurrentPlayerStringID = id.Hex()                             !!!!
 				insertInfo.StringID = id.Hex()
 			}
 		}
@@ -182,7 +180,6 @@ func (gc *GameController) CalculatePlayerRank(w http.ResponseWriter, r *http.Req
 		log.Println(err)
 	}
 
-	// TODO: Check if this is triggering a re-render in the frontend (since at first the rank is 0 and then we set it here, meanwhile currentPlayerScore is in the dependency array of that useEffect)
 	currentPlayerRank := gc.model.GetAndSetPlayerRank(currentPlayerObjectID, userData.CurrentPlayerScore)
 	fmt.Println("CurrentPlayerRank: ", currentPlayerRank)
 
@@ -235,128 +232,4 @@ func (gc *GameController) GetScoreboard(w http.ResponseWriter, r *http.Request) 
 	if err := json.NewEncoder(w).Encode(responseData); err != nil {
 		log.Println(err)
 	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////
-
-// Game page (playground) controller
-func (gc *GameController) Playground(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("We are in the Playground!")
-
-	// Placeholder return for now
-	return
-
-	// isPlayAgainTrue := r.FormValue("isPlayAgainTrue")
-	// if isPlayAgainTrue == "true" {
-	// 	gc.data.ChosenAlphabet = ""
-	// 	gc.data.Character = ""
-	// 	gc.data.ResultMessage = ""
-	// 	gc.data.CorrectAnswer = ""
-	// 	gc.data.IsFinished = "false"
-	// 	gc.data.CurrentPlayer = ""
-	// 	gc.data.CurrentPlayerStringID = ""
-	// 	gc.data.CurrentPlayerRank = 0
-	// 	gc.data.CurrentPlayerScore = 0
-	// 	gc.data.IsUsernameValid = "false"
-	// 	gc.data.DisplayScoreboard = "false"
-	// 	gc.data.Scoreboard = []models.DocumentSchema{}
-	// 	gc.data.CurrentPage = 0
-	// 	gc.data.NumOfPages = 1
-	// 	gc.data.MessageForUser = ""
-	// 	gc.data.IsPlayAgainTrue = "true" // We set the IsPlayAgainTrue to true here
-	// }
-	//
-	// // Check if the finish button has been clicked, if it was, we don't check the answer
-	// // and the game stops.
-	// if r.FormValue("isFinished") == "true" {
-	// 	gc.data.IsFinished = "true"
-	// }
-	//
-	// if gc.data.IsFinished == "true" {
-	// 	if r.FormValue("username") != "" && !gc.model.CheckIfUsernameAlreadyExists(r.FormValue("username")) {
-	// 		gc.data.CurrentPlayer = r.FormValue("username")
-	// 	} else {
-	// 		// Potential problem: We enter here every time we go to a next or previous table page. This isn't a problem for now.
-	// 		fmt.Println("The username you entered isn't valid. Please enter another one.")
-	// 		gc.data.IsUsernameValid = "false"
-	// 	}
-	//
-	// 	// gc.data.CurrentPlayer will not be empty if the entered username is valid (passes the check above)
-	// 	if gc.data.CurrentPlayer != "" {
-	// 		gc.data.IsUsernameValid = "true"
-	//
-	// 		if r.FormValue("isNextPageClicked") == "true" {
-	// 			gc.data.CurrentPage++
-	// 		} else if r.FormValue("isPreviousPageClicked") == "true" {
-	// 			gc.data.CurrentPage--
-	// 		} else { // We don't want to insert same user into the db each time we press "Next Page" button
-	// 			var document interface{}
-	// 			// As per the official documentation, bson.M should be used if the order of the elements in the document doesn't matter
-	// 			document = bson.M{
-	// 				"ID":       gc.data.CurrentPlayerStringID, //  At this point this is empty, but we populate it in the model with `bson` notation
-	// 				"Username": gc.data.CurrentPlayer,
-	// 				"Score":    gc.data.CurrentPlayerScore,
-	// 				"Rank":     gc.data.CurrentPlayerRank,
-	// 			}
-	//
-	// 			// Add the player to the database
-	// 			fmt.Println("Document: ", document)
-	// 			fmt.Println("Inserting the user into the db...")
-	//
-	// 			insertOneResult, err := gc.model.InsertOne(document)
-	// 			if err != nil {
-	// 				panic(err)
-	// 			} else {
-	// 				fmt.Println("Insert result: ", insertOneResult)
-	//
-	// 				// Decode the insertOneResult into a string
-	// 				if id, ok := insertOneResult.InsertedID.(primitive.ObjectID); ok {
-	// 					gc.data.CurrentPlayerObjectID = id
-	// 					gc.data.CurrentPlayerStringID = id.Hex()
-	// 				}
-	// 			}
-	// 		}
-	// 		// Get and set the player rank
-	// 		gc.data.CurrentPlayerRank = gc.model.GetAndSetPlayerRank(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
-	//
-	// 		// Update the ranks of other players that are below the current player.
-	// 		gc.model.UpdateOtherRanks(gc.data.CurrentPlayerObjectID, gc.data.CurrentPlayerScore)
-	//
-	// 		gc.data.DisplayScoreboard = "true"
-	// 		gc.data.Scoreboard, gc.data.NumOfPages = gc.model.GetScoreboard(gc.data.CurrentPage)
-	// 	}
-	// } else {
-	// 	if gc.data.IsPlayAgainTrue == "false" {
-	// 		// Parse the answer
-	// 		answer := r.FormValue("answer")
-	//
-	// 		/*
-	// 		   If the character that we need to guess is empty, skip the check,
-	// 		   or in other words, if its not empty, do the check:
-	// 		*/
-	// 		// This happens the first time we come here only!
-	// 		if gc.data.Character != "" {
-	// 			// Check if the answer is correct
-	// 			isAnswerCorrect, _ := kana_logic.Check_answer(answer, gc.data.Character)
-	// 			if isAnswerCorrect {
-	// 				gc.data.ResultMessage = "Correct answer!"
-	// 				gc.data.CorrectAnswer = ""
-	// 				gc.data.CurrentPlayerScore++
-	// 			} else {
-	// 				gc.data.CorrectAnswer = tables.Romaji_table[gc.data.Character]
-	// 				gc.data.ResultMessage = fmt.Sprintf("Wrong, the right answer was ")
-	//
-	// 				if gc.data.CurrentPlayerScore > 0 {
-	// 					gc.data.CurrentPlayerScore--
-	// 				}
-	// 			}
-	// 		} else {
-	// 			gc.data.IsPlayAgainTrue = "false"
-	// 		}
-	// 	}
-	// 	gc.data.Character = kana_logic.Play_all_gamemode(gc.chosenAlphabetTable)
-	// }
-	// if err := templates.TmpGame.Execute(w, gc.data); err != nil {
-	// 	panic(err)
-	// }
 }
