@@ -15,5 +15,4 @@ func InitRoutes(r *mux.Router, client *mongo.Client, ctx context.Context) {
 	r.HandleFunc("/game/insertUserIntoDatabase", controllers.NewGameController(ctx, client).HandleUserData).Methods("POST")
 	r.HandleFunc("/game/calculatePlayerRank", controllers.NewGameController(ctx, client).CalculatePlayerRank).Methods("POST")
 	r.HandleFunc("/game/getScoreboard", controllers.NewGameController(ctx, client).GetScoreboard).Methods("POST")
-	r.HandleFunc("/game", controllers.NewGameController(ctx, client).Playground)
 }
